@@ -24,8 +24,9 @@ public class VersionedInventoryTrackerBehaviour extends BlockEntityBehaviour {
 	}
 
 	public boolean stillWaiting(Storage<ItemVariant> handler) {
-		if (handler instanceof VersionedInventoryWrapper viw)
+		if (handler instanceof VersionedInventoryWrapper viw) {
 			return viw.getId() == ignoredId && viw.getVersion() == ignoredVersion;
+		}
 		return false;
 	}
 
@@ -38,6 +39,17 @@ public class VersionedInventoryTrackerBehaviour extends BlockEntityBehaviour {
 		if (handler instanceof VersionedInventoryWrapper viw) {
 			ignoredId = viw.getId();
 			ignoredVersion = viw.getVersion();
+		}
+	}
+
+	public void incrementVersion(InvManipulationBehaviour behaviour) {
+		if (behaviour.hasInventory())
+			incrementVersion(behaviour.getInventory());
+	}
+
+	public void incrementVersion(Storage<ItemVariant> handler) {
+		if (handler instanceof VersionedInventoryWrapper viw) {
+			viw.incrementVersion();
 		}
 	}
 

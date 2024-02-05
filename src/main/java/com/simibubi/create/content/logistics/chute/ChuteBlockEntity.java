@@ -20,7 +20,6 @@ import com.simibubi.create.content.logistics.funnel.FunnelBlock;
 import com.simibubi.create.foundation.advancement.AllAdvancements;
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
-import com.simibubi.create.foundation.blockEntity.behaviour.inventory.VersionedInventoryTrackerBehaviour;
 import com.simibubi.create.foundation.item.ItemHelper;
 import com.simibubi.create.foundation.item.ItemHelper.ExtractionCountMode;
 import com.simibubi.create.foundation.particle.AirParticleData;
@@ -31,11 +30,10 @@ import com.simibubi.create.foundation.utility.Lang;
 import com.simibubi.create.foundation.utility.VecHelper;
 import com.simibubi.create.foundation.utility.animation.LerpedFloat;
 import com.simibubi.create.infrastructure.config.AllConfigs;
+import com.simibubi.create.foundation.blockEntity.behaviour.inventory.VersionedInventoryTrackerBehaviour;
 
 import io.github.fabricators_of_create.porting_lib.block.CustomRenderBoundingBoxBlockEntity;
 import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
-import io.github.fabricators_of_create.porting_lib.transfer.item.ItemHandlerHelper;
-import io.github.fabricators_of_create.porting_lib.util.ItemStackUtil;
 import io.github.fabricators_of_create.porting_lib.util.NBTSerializer;
 import io.github.fabricators_of_create.porting_lib.util.StorageProvider;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
@@ -88,7 +86,6 @@ public class ChuteBlockEntity extends SmartBlockEntity implements IHaveGoggleInf
 	int entitySearchCooldown;
 
 	VersionedInventoryTrackerBehaviour invVersionTracker;
-
 	StorageProvider<ItemVariant> capAbove;
 	StorageProvider<ItemVariant> capBelow;
 
@@ -217,7 +214,7 @@ public class ChuteBlockEntity extends SmartBlockEntity implements IHaveGoggleInf
 
 			for (int i = 1; i <= flowLimit + 1; i++) {
 				TransportedItemStackHandlerBehaviour behaviour =
-					BlockEntityBehaviour.get(level, worldPosition.below(i), TransportedItemStackHandlerBehaviour.TYPE);
+						BlockEntityBehaviour.get(level, worldPosition.below(i), TransportedItemStackHandlerBehaviour.TYPE);
 				if (behaviour == null)
 					continue;
 				beltBelow = behaviour;
@@ -245,7 +242,7 @@ public class ChuteBlockEntity extends SmartBlockEntity implements IHaveGoggleInf
 			if (!canAcceptItem(entityItem))
 				continue;
 			setItem(entityItem.copy(), (float) (itemEntity.getBoundingBox()
-				.getCenter().y - worldPosition.getY()));
+					.getCenter().y - worldPosition.getY()));
 			itemEntity.discard();
 			break;
 		}
@@ -302,7 +299,7 @@ public class ChuteBlockEntity extends SmartBlockEntity implements IHaveGoggleInf
 			return;
 
 		if (up && AbstractChuteBlock.isOpenChute(blockState)
-			&& BlockHelper.noCollisionInSpace(level, worldPosition.above()))
+				&& BlockHelper.noCollisionInSpace(level, worldPosition.above()))
 			spawnAirFlow(1, 2, absMotion, .5f);
 
 		if (AbstractChuteBlock.getChuteFacing(blockState) != Direction.DOWN)
@@ -329,7 +326,7 @@ public class ChuteBlockEntity extends SmartBlockEntity implements IHaveGoggleInf
 		float zOff = Create.RANDOM.nextFloat() * .5f + .25f;
 		Vec3 v = origin.add(xOff, verticalStart, zOff);
 		Vec3 d = origin.add(xOff, verticalEnd, zOff)
-			.subtract(v);
+				.subtract(v);
 		if (Create.RANDOM.nextFloat() < 2 * motion)
 			level.addAlwaysVisibleParticle(airParticleData, v.x, v.y, v.z, d.x, d.y, d.z);
 	}
@@ -349,13 +346,16 @@ public class ChuteBlockEntity extends SmartBlockEntity implements IHaveGoggleInf
 			return;
 		if (invVersionTracker.stillWaiting(inv))
 			return;
+		if(!this.canOutputItems())
+			return;
 		Predicate<ItemStack> canAccept = this::canAcceptItem;
 		int count = getExtractionAmount();
 		ExtractionCountMode mode = getExtractionMode();
 		if (mode == ExtractionCountMode.UPTO || !ItemHelper.extract(inv, canAccept, mode, count, true)
-			.isEmpty()) {
+				.isEmpty()) {
 			ItemStack extracted = ItemHelper.extract(inv, canAccept, mode, count, false);
 			if (!extracted.isEmpty()) {
+				invVersionTracker.incrementVersion(inv);
 				setItem(extracted, startLocation);
 				return;
 			}
@@ -374,10 +374,15 @@ public class ChuteBlockEntity extends SmartBlockEntity implements IHaveGoggleInf
 		if (below != null) {
 			if (level.isClientSide && !isVirtual())
 				return false;
-
+			if(invVersionTracker.stillWaiting(below)) {
+				return false;
+			}
 			try (Transaction t = TransferUtil.getTransaction()) {
 				long inserted = below.insert(ItemVariant.of(item), item.getCount(), t);
-				if (inserted != 0 && !simulate) t.commit();
+				if (inserted != 0 && !simulate) {
+					invVersionTracker.incrementVersion(below);
+					t.commit();
+				}
 				ItemStack held = getItem();
 				if (!simulate) {
 					ItemStack newStack = held.copy();
@@ -386,9 +391,10 @@ public class ChuteBlockEntity extends SmartBlockEntity implements IHaveGoggleInf
 				}
 				if (inserted != 0)
 					return true;
-				if (direction == Direction.DOWN)
-					return false;
 			}
+			invVersionTracker.awaitNewVersion(below);
+			if (direction == Direction.DOWN)
+				return false;
 		}
 
 		if (targetChute != null) {
@@ -424,27 +430,37 @@ public class ChuteBlockEntity extends SmartBlockEntity implements IHaveGoggleInf
 	}
 
 	private boolean handleUpwardOutput(boolean simulate) {
-		BlockState stateAbove = level.getBlockState(worldPosition.above());
-
 		if (level == null || !this.canOutputItems())
 			return false;
 
+		BlockState stateAbove = level.getBlockState(worldPosition.above());
+		Storage<ItemVariant> above = grabCapability(Direction.UP);
 		if (AbstractChuteBlock.isOpenChute(getBlockState())) {
-			Storage<ItemVariant> above = grabCapability(Direction.UP);
 			if (above != null) {
 				if (level.isClientSide && !isVirtual() && !ChuteBlock.isChute(stateAbove))
 					return false;
-
+				if(invVersionTracker.stillWaiting(above)) {
+					return false;
+				}
 				try (Transaction t = TransferUtil.getTransaction()) {
 					long inserted = above.insert(ItemVariant.of(item), item.getCount(), t);
+
+					if (inserted != 0 && !simulate) {
+						invVersionTracker.incrementVersion(above);
+						t.commit();
+					}
+
 					if (!simulate) {
 						item = item.copy();
 						item.shrink(ItemHelper.truncateLong(inserted));
 						itemHandler.update();
 						sendData();
-						t.commit();
 					}
-					return inserted != 0;
+
+					if (inserted != 0)
+						return true;
+					invVersionTracker.awaitNewVersion(above);
+					return false;
 				}
 			}
 		}
@@ -528,6 +544,7 @@ public class ChuteBlockEntity extends SmartBlockEntity implements IHaveGoggleInf
 	public void setItem(ItemStack stack, float insertionPos) {
 		item = stack;
 		itemPosition.startWithValue(insertionPos);
+		invVersionTracker.reset();
 		itemHandler.update();
 		if (!level.isClientSide) {
 			notifyUpdate();
@@ -638,7 +655,7 @@ public class ChuteBlockEntity extends SmartBlockEntity implements IHaveGoggleInf
 	protected float calculatePull() {
 		BlockState blockStateAbove = level.getBlockState(worldPosition.above());
 		if (AllBlocks.ENCASED_FAN.has(blockStateAbove)
-			&& blockStateAbove.getValue(EncasedFanBlock.FACING) == Direction.DOWN) {
+				&& blockStateAbove.getValue(EncasedFanBlock.FACING) == Direction.DOWN) {
 			BlockEntity be = level.getBlockEntity(worldPosition.above());
 			if (be instanceof EncasedFanBlockEntity && !be.isRemoved()) {
 				EncasedFanBlockEntity fan = (EncasedFanBlockEntity) be;
@@ -661,7 +678,7 @@ public class ChuteBlockEntity extends SmartBlockEntity implements IHaveGoggleInf
 			return 0;
 		BlockState blockStateBelow = level.getBlockState(worldPosition.below());
 		if (AllBlocks.ENCASED_FAN.has(blockStateBelow)
-			&& blockStateBelow.getValue(EncasedFanBlock.FACING) == Direction.UP) {
+				&& blockStateBelow.getValue(EncasedFanBlock.FACING) == Direction.UP) {
 			BlockEntity be = level.getBlockEntity(worldPosition.below());
 			if (be instanceof EncasedFanBlockEntity && !be.isRemoved()) {
 				EncasedFanBlockEntity fan = (EncasedFanBlockEntity) be;
@@ -684,7 +701,7 @@ public class ChuteBlockEntity extends SmartBlockEntity implements IHaveGoggleInf
 			return null;
 		BlockPos chutePos = worldPosition.below();
 		if (targetDirection.getAxis()
-			.isHorizontal())
+				.isHorizontal())
 			chutePos = chutePos.relative(targetDirection.getOpposite());
 		BlockState chuteState = level.getBlockState(chutePos);
 		if (!AbstractChuteBlock.isChute(chuteState))
@@ -713,7 +730,7 @@ public class ChuteBlockEntity extends SmartBlockEntity implements IHaveGoggleInf
 		direction = direction.getOpposite();
 		BlockPos chutePos = worldPosition.above();
 		if (direction.getAxis()
-			.isHorizontal())
+				.isHorizontal())
 			chutePos = chutePos.relative(direction);
 		BlockState chuteState = level.getBlockState(chutePos);
 		Direction chuteFacing = AbstractChuteBlock.getChuteFacing(chuteState);
@@ -728,30 +745,30 @@ public class ChuteBlockEntity extends SmartBlockEntity implements IHaveGoggleInf
 	public boolean addToGoggleTooltip(List<Component> tooltip, boolean isPlayerSneaking) {
 		boolean downward = getItemMotion() < 0;
 		Lang.translate("tooltip.chute.header")
-			.forGoggles(tooltip);
+				.forGoggles(tooltip);
 
 		if (pull == 0 && push == 0)
 			Lang.translate("tooltip.chute.no_fans_attached")
-				.style(ChatFormatting.GRAY)
-				.forGoggles(tooltip);
+					.style(ChatFormatting.GRAY)
+					.forGoggles(tooltip);
 		if (pull != 0)
 			Lang.translate("tooltip.chute.fans_" + (pull > 0 ? "pull_up" : "push_down"))
-				.style(ChatFormatting.GRAY)
-				.forGoggles(tooltip);
+					.style(ChatFormatting.GRAY)
+					.forGoggles(tooltip);
 		if (push != 0)
 			Lang.translate("tooltip.chute.fans_" + (push > 0 ? "push_up" : "pull_down"))
-				.style(ChatFormatting.GRAY)
-				.forGoggles(tooltip);
+					.style(ChatFormatting.GRAY)
+					.forGoggles(tooltip);
 
 		Lang.text("-> ")
-			.add(Lang.translate("tooltip.chute.items_move_" + (downward ? "down" : "up")))
-			.style(ChatFormatting.YELLOW)
-			.forGoggles(tooltip);
+				.add(Lang.translate("tooltip.chute.items_move_" + (downward ? "down" : "up")))
+				.style(ChatFormatting.YELLOW)
+				.forGoggles(tooltip);
 		if (!item.isEmpty())
 			Lang.translate("tooltip.chute.contains", Components.translatable(item.getDescriptionId())
-				.getString(), item.getCount())
-				.style(ChatFormatting.GREEN)
-				.forGoggles(tooltip);
+							.getString(), item.getCount())
+					.style(ChatFormatting.GREEN)
+					.forGoggles(tooltip);
 
 		return true;
 	}

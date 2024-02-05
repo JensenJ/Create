@@ -6,6 +6,7 @@ import com.simibubi.create.content.logistics.funnel.BeltFunnelBlock.Shape;
 import com.simibubi.create.content.logistics.funnel.FunnelBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.filtering.FilteringBehaviour;
 import com.simibubi.create.foundation.blockEntity.behaviour.inventory.InvManipulationBehaviour;
+import com.simibubi.create.foundation.blockEntity.behaviour.inventory.VersionedInventoryTrackerBehaviour;
 import com.simibubi.create.foundation.item.ItemHelper.ExtractionCountMode;
 
 import io.github.fabricators_of_create.porting_lib.transfer.item.ItemHandlerHelper;
@@ -21,16 +22,16 @@ import net.minecraft.world.level.block.state.BlockState;
 public class BeltFunnelInteractionHandler {
 
 	public static boolean checkForFunnels(BeltInventory beltInventory, TransportedItemStack currentItem,
-		float nextOffset) {
+										  float nextOffset) {
 		boolean beltMovementPositive = beltInventory.beltMovementPositive;
 		int firstUpcomingSegment = (int) Math.floor(currentItem.beltPosition);
 		int step = beltMovementPositive ? 1 : -1;
 		firstUpcomingSegment = Mth.clamp(firstUpcomingSegment, 0, beltInventory.belt.beltLength - 1);
 
 		for (int segment = firstUpcomingSegment; beltMovementPositive ? segment <= nextOffset
-			: segment + 1 >= nextOffset; segment += step) {
+				: segment + 1 >= nextOffset; segment += step) {
 			BlockPos funnelPos = BeltHelper.getPositionForOffset(beltInventory.belt, segment)
-				.above();
+					.above();
 			Level world = beltInventory.belt.getLevel();
 			BlockState funnelState = world.getBlockState(funnelPos);
 			if (!(funnelState.getBlock() instanceof BeltFunnelBlock))
@@ -48,7 +49,7 @@ public class BeltFunnelInteractionHandler {
 				funnelEntry += .499f * (beltMovementPositive ? -1 : 1);
 
 			boolean hasCrossed = nextOffset > funnelEntry && beltMovementPositive
-				|| nextOffset < funnelEntry && !beltMovementPositive;
+					|| nextOffset < funnelEntry && !beltMovementPositive;
 			if (!hasCrossed)
 				return false;
 			if (blocking)
@@ -74,6 +75,10 @@ public class BeltFunnelInteractionHandler {
 				else
 					continue;
 
+			if(beltInventory.belt.invVersionTracker.stillWaiting(inserting)) {
+				continue;
+			}
+
 			int amountToExtract = funnelBE.getAmountToExtract();
 			ExtractionCountMode modeToExtract = funnelBE.getModeToExtract();
 
@@ -84,10 +89,11 @@ public class BeltFunnelInteractionHandler {
 				else
 					continue;
 
+
 			if (amountToExtract != -1 && modeToExtract != ExtractionCountMode.UPTO) {
 				toInsert.setCount(Math.min(amountToExtract, toInsert.getCount()));
-				ItemStack remainder = inserting.simulate()
-					.insert(toInsert);
+				ItemStack remainder = inserting.simulate().insert(toInsert);
+
 				if (!remainder.isEmpty())
 					if (blocking)
 						return true;
@@ -97,8 +103,10 @@ public class BeltFunnelInteractionHandler {
 
 			ItemStack remainder = inserting.insert(toInsert);
 			if (ItemStack.matches(remainder, toInsert))
-				if (blocking)
+				if (blocking) {
+					beltInventory.belt.invVersionTracker.awaitNewVersion(inserting);
 					return true;
+				}
 				else
 					continue;
 
@@ -110,6 +118,8 @@ public class BeltFunnelInteractionHandler {
 
 			funnelBE.flap(true);
 			funnelBE.onTransfer(toInsert);
+			beltInventory.belt.invVersionTracker.incrementVersion(inserting);
+
 			currentItem.stack = remainder;
 			beltInventory.belt.sendData();
 			if (blocking)

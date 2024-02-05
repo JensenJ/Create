@@ -22,6 +22,8 @@ import io.github.fabricators_of_create.porting_lib.fluids.FluidStack;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
+import net.fabricmc.fabric.api.transfer.v1.storage.StorageView;
+import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
@@ -183,10 +185,26 @@ public class MountedStorageManager {
 		}
 	}
 
+	//Temporary fix until moving contraptions no longer crash when extracting items
+	public static <T> void clearItemStorage(Storage<T> storage) {
+		if (!storage.supportsExtraction()) {
+			return;
+		}
+		try (Transaction t = TransferUtil.getTransaction()) {
+			for (StorageView<T> view : storage.nonEmptyViews()) {
+				long amount = view.getAmount();
+				if(amount == 0)
+					continue;
+				view.extract(view.getResource(), amount, t);
+			}
+			t.commit();
+		}
+	}
+
 	public void clear() {
 		for (Storage<ItemVariant> storage : inventory.parts) {
 			if (!(storage instanceof ContraptionInvWrapper wrapper) || !wrapper.isExternal) {
-				TransferUtil.clearStorage(storage);
+				clearItemStorage(storage);
 			}
 		}
 		TransferUtil.clearStorage(fluidInventory);

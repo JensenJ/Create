@@ -12,6 +12,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 
+import com.simibubi.create.foundation.blockEntity.behaviour.inventory.VersionedInventoryTrackerBehaviour;
+
 import org.jetbrains.annotations.Nullable;
 
 import com.jozufozu.flywheel.light.LightListener;
@@ -74,7 +76,7 @@ public class BeltBlockEntity extends KineticBlockEntity implements SidedStorageB
 	protected BlockPos controller;
 	protected BeltInventory inventory;
 	protected Storage<ItemVariant> itemHandler;
-
+	public VersionedInventoryTrackerBehaviour invVersionTracker;
 	public CompoundTag trackerUpdateTag;
 
 	@Environment(EnvType.CLIENT)
@@ -96,9 +98,10 @@ public class BeltBlockEntity extends KineticBlockEntity implements SidedStorageB
 	public void addBehaviours(List<BlockEntityBehaviour> behaviours) {
 		super.addBehaviours(behaviours);
 		behaviours.add(new DirectBeltInputBehaviour(this).onlyInsertWhen(this::canInsertFrom)
-			.setInsertionHandler(this::tryInsertingFromSide).considerOccupiedWhen(this::isOccupied));
+				.setInsertionHandler(this::tryInsertingFromSide).considerOccupiedWhen(this::isOccupied));
 		behaviours.add(new TransportedItemStackHandlerBehaviour(this, this::applyToAllItems)
-			.withStackPlacement(this::getWorldPositionOf));
+				.withStackPlacement(this::getWorldPositionOf));
+		behaviours.add(invVersionTracker = new VersionedInventoryTrackerBehaviour(this));
 	}
 
 	@Override
@@ -138,7 +141,7 @@ public class BeltBlockEntity extends KineticBlockEntity implements SidedStorageB
 		passengers.forEach((entity, info) -> {
 			boolean canBeTransported = BeltMovementHandler.canBeTransported(entity);
 			boolean leftTheBelt =
-				info.getTicksSinceLastCollision() > ((getBlockState().getValue(BeltBlock.SLOPE) != HORIZONTAL) ? 3 : 1);
+					info.getTicksSinceLastCollision() > ((getBlockState().getValue(BeltBlock.SLOPE) != HORIZONTAL) ? 3 : 1);
 			if (!canBeTransported || leftTheBelt) {
 				toRemove.add(entity);
 				return;
@@ -229,7 +232,7 @@ public class BeltBlockEntity extends KineticBlockEntity implements SidedStorageB
 			controller = worldPosition;
 
 		color = compound.contains("Dye") ? Optional.of(NBTHelper.readEnum(compound, "Dye", DyeColor.class))
-			: Optional.empty();
+				: Optional.empty();
 
 		if (!wasMoved) {
 			if (!isController())
@@ -316,7 +319,7 @@ public class BeltBlockEntity extends KineticBlockEntity implements SidedStorageB
 
 	public boolean isController() {
 		return controller != null && worldPosition.getX() == controller.getX()
-			&& worldPosition.getY() == controller.getY() && worldPosition.getZ() == controller.getZ();
+				&& worldPosition.getY() == controller.getY() && worldPosition.getZ() == controller.getZ();
 	}
 
 	public float getBeltMovementSpeed() {
@@ -325,7 +328,7 @@ public class BeltBlockEntity extends KineticBlockEntity implements SidedStorageB
 
 	public float getDirectionAwareBeltMovementSpeed() {
 		int offset = getBeltFacing().getAxisDirection()
-			.getStep();
+				.getStep();
 		if (getBeltFacing().getAxis() == Axis.X)
 			offset *= -1;
 		return getBeltMovementSpeed() * offset;
@@ -350,7 +353,7 @@ public class BeltBlockEntity extends KineticBlockEntity implements SidedStorageB
 			return false;
 
 		boolean movingPositively = (getSpeed() > 0 == (direction.getAxisDirection()
-			.getStep() == 1)) ^ direction.getAxis() == Axis.X;
+				.getStep() == 1)) ^ direction.getAxis() == Axis.X;
 		return part == BeltPart.START ^ movingPositively;
 	}
 
@@ -411,7 +414,7 @@ public class BeltBlockEntity extends KineticBlockEntity implements SidedStorageB
 	}
 
 	private void applyToAllItems(float maxDistanceFromCenter,
-		Function<TransportedItemStack, TransportedResult> processFunction) {
+								 Function<TransportedItemStack, TransportedResult> processFunction) {
 		BeltBlockEntity controller = getControllerBE();
 		if (controller == null)
 			return;
@@ -444,11 +447,11 @@ public class BeltBlockEntity extends KineticBlockEntity implements SidedStorageB
 
 		if (casing != CasingType.NONE)
 			level.levelEvent(2001, worldPosition,
-				Block.getId(casing == CasingType.ANDESITE ? AllBlocks.ANDESITE_CASING.getDefaultState()
-					: AllBlocks.BRASS_CASING.getDefaultState()));
+					Block.getId(casing == CasingType.ANDESITE ? AllBlocks.ANDESITE_CASING.getDefaultState()
+							: AllBlocks.BRASS_CASING.getDefaultState()));
 		if (blockState.getValue(BeltBlock.CASING) != shouldBlockHaveCasing)
 			KineticBlockEntity.switchToBlockState(level, worldPosition,
-				blockState.setValue(BeltBlock.CASING, shouldBlockHaveCasing));
+					blockState.setValue(BeltBlock.CASING, shouldBlockHaveCasing));
 		casing = type;
 		setChanged();
 		sendData();
@@ -459,11 +462,11 @@ public class BeltBlockEntity extends KineticBlockEntity implements SidedStorageB
 			return false;
 		BlockState state = getBlockState();
 		if (state.hasProperty(BeltBlock.SLOPE) && (state.getValue(BeltBlock.SLOPE) == BeltSlope.SIDEWAYS
-			|| state.getValue(BeltBlock.SLOPE) == BeltSlope.VERTICAL))
+				|| state.getValue(BeltBlock.SLOPE) == BeltSlope.VERTICAL))
 			return false;
 		return getMovementFacing() != side.getOpposite();
 	}
-	
+
 	private boolean isOccupied(Direction side) {
 		BeltBlockEntity nextBeltController = getControllerBE();
 		if (nextBeltController == null)
@@ -496,7 +499,7 @@ public class BeltBlockEntity extends KineticBlockEntity implements SidedStorageB
 			BrassTunnelBlockEntity tunnelBE = (BrassTunnelBlockEntity) teAbove;
 			if (tunnelBE.hasDistributionBehaviour()) {
 				if (!tunnelBE.getStackToDistribute()
-					.isEmpty())
+						.isEmpty())
 					return inserted;
 				if (!tunnelBE.testFlapFilter(side.getOpposite(), inserted))
 					return inserted;
@@ -518,10 +521,10 @@ public class BeltBlockEntity extends KineticBlockEntity implements SidedStorageB
 
 		Direction movementFacing = getMovementFacing();
 		if (!side.getAxis()
-			.isVertical()) {
+				.isVertical()) {
 			if (movementFacing != side) {
 				transportedStack.sideOffset = side.getAxisDirection()
-					.getStep() * .35f;
+						.getStep() * .35f;
 				if (side.getAxis() == Axis.X)
 					transportedStack.sideOffset *= -1;
 			} else
@@ -549,12 +552,12 @@ public class BeltBlockEntity extends KineticBlockEntity implements SidedStorageB
 	@Override
 	protected boolean canPropagateDiagonally(IRotate block, BlockState state) {
 		return state.hasProperty(BeltBlock.SLOPE) && (state.getValue(BeltBlock.SLOPE) == BeltSlope.UPWARD
-			|| state.getValue(BeltBlock.SLOPE) == BeltSlope.DOWNWARD);
+				|| state.getValue(BeltBlock.SLOPE) == BeltSlope.DOWNWARD);
 	}
 
 	@Override
 	public float propagateRotationTo(KineticBlockEntity target, BlockState stateFrom, BlockState stateTo, BlockPos diff,
-		boolean connectedViaAxes, boolean connectedViaCogs) {
+									 boolean connectedViaAxes, boolean connectedViaCogs) {
 		if (target instanceof BeltBlockEntity && !connectedViaAxes)
 			return getController().equals(((BeltBlockEntity) target).getController()) ? 1 : 0;
 		return 0;

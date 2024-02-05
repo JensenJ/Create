@@ -142,21 +142,24 @@ public class DeployerFakePlayer extends FakePlayer {
 	}
 
 	public static boolean entitiesDontRetaliate(LivingEntity target, DamageSource source, float amount) {
-		if (!(target instanceof DeployerFakePlayer))
+		if(!(source.getEntity() instanceof DeployerFakePlayer)){
 			return false;
-		if (!(source.getEntity() instanceof Mob))
-			return false;
-		Mob mob = (Mob) source.getEntity();
+		}
 
-		CKinetics.DeployerAggroSetting setting = AllConfigs.server().kinetics.ignoreDeployerAttacks.get();
+		if (!(target instanceof Mob mob)) {
+			return false;
+		}
+
+        CKinetics.DeployerAggroSetting setting = AllConfigs.server().kinetics.ignoreDeployerAttacks.get();
 
 		switch (setting) {
 		case ALL:
 			mob.setTarget(null);
 			break;
 		case CREEPERS:
-			if (mob instanceof Creeper)
-				mob.setTarget(null);
+			if (mob instanceof Creeper creeper) {
+                creeper.setTarget(null);
+			}
 			break;
 		case NONE:
 		default:

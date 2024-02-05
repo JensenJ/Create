@@ -3,8 +3,6 @@ package com.simibubi.create.content.logistics.funnel;
 import java.lang.ref.WeakReference;
 import java.util.List;
 
-import org.apache.commons.lang3.mutable.MutableBoolean;
-
 import com.jozufozu.flywheel.backend.instancing.InstancedRenderDispatcher;
 import com.simibubi.create.AllBlocks;
 import com.simibubi.create.AllPackets;
@@ -41,6 +39,8 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
+import org.apache.commons.lang3.mutable.MutableBoolean;
+
 public class FunnelBlockEntity extends SmartBlockEntity implements IHaveHoveringInformation {
 
 	private FilteringBehaviour filtering;
@@ -67,7 +67,7 @@ public class FunnelBlockEntity extends SmartBlockEntity implements IHaveHovering
 		if (!FunnelBlock.isFunnel(state))
 			return Mode.INVALID;
 		if (state.getOptionalValue(BlockStateProperties.POWERED)
-			.orElse(false))
+				.orElse(false))
 			return Mode.PAUSED;
 		if (state.getBlock() instanceof BeltFunnelBlock) {
 			Shape shape = state.getValue(BeltFunnelBlock.SHAPE);
@@ -79,8 +79,8 @@ public class FunnelBlockEntity extends SmartBlockEntity implements IHaveHovering
 			BeltBlockEntity belt = BeltHelper.getSegmentBE(level, worldPosition.below());
 			if (belt != null)
 				return belt.getMovementFacing() == state.getValue(BeltFunnelBlock.HORIZONTAL_FACING)
-					? Mode.PUSHING_TO_BELT
-					: Mode.TAKING_FROM_BELT;
+						? Mode.PUSHING_TO_BELT
+						: Mode.TAKING_FROM_BELT;
 			return Mode.INVALID;
 		}
 		if (state.getBlock() instanceof FunnelBlock)
@@ -115,9 +115,9 @@ public class FunnelBlockEntity extends SmartBlockEntity implements IHaveHovering
 	}
 
 	private void activateExtractor() {
-		if (invVersionTracker.stillWaiting(invManipulation))
+		if(invVersionTracker.stillWaiting(invManipulation))
 			return;
-		
+
 		BlockState blockState = getBlockState();
 		Direction facing = AbstractFunnelBlock.getFunnelFacing(blockState);
 
@@ -133,7 +133,7 @@ public class FunnelBlockEntity extends SmartBlockEntity implements IHaveHovering
 		} else {
 			ItemEntity lastEntity = lastObserved.get();
 			if (lastEntity == null || !lastEntity.isAlive() || !lastEntity.getBoundingBox()
-				.intersects(area)) {
+					.intersects(area)) {
 				trackingEntityPresent = false;
 				lastObserved = null;
 			}
@@ -146,11 +146,12 @@ public class FunnelBlockEntity extends SmartBlockEntity implements IHaveHovering
 		int amountToExtract = getAmountToExtract();
 		ExtractionCountMode mode = getModeToExtract();
 		ItemStack stack = invManipulation.simulate()
-			.extract(mode, amountToExtract);
-		if (stack.isEmpty()) {
+				.extract(mode, amountToExtract);
+		if (stack.isEmpty()){
 			invVersionTracker.awaitNewVersion(invManipulation);
 			return;
 		}
+
 		for (ItemEntity itemEntity : level.getEntitiesOfClass(ItemEntity.class, area)) {
 			lastObserved = new WeakReference<>(itemEntity);
 			return;
@@ -163,14 +164,15 @@ public class FunnelBlockEntity extends SmartBlockEntity implements IHaveHovering
 
 		flap(false);
 		onTransfer(stack);
+		invVersionTracker.incrementVersion(invManipulation);
 
 		Vec3 outputPos = VecHelper.getCenterOf(worldPosition);
 		boolean vertical = facing.getAxis()
-			.isVertical();
+				.isVertical();
 		boolean up = facing == Direction.UP;
 
 		outputPos = outputPos.add(Vec3.atLowerCornerOf(facing.getNormal())
-			.scale(vertical ? up ? .15f : .5f : .25f));
+				.scale(vertical ? up ? .15f : .5f : .25f));
 		if (!vertical)
 			outputPos = outputPos.subtract(0, .45f, 0);
 
@@ -204,7 +206,7 @@ public class FunnelBlockEntity extends SmartBlockEntity implements IHaveHovering
 		BlockState blockState = getBlockState();
 		Direction facing = blockState.getValue(BeltFunnelBlock.HORIZONTAL_FACING);
 		DirectBeltInputBehaviour inputBehaviour =
-			BlockEntityBehaviour.get(level, worldPosition.below(), DirectBeltInputBehaviour.TYPE);
+				BlockEntityBehaviour.get(level, worldPosition.below(), DirectBeltInputBehaviour.TYPE);
 
 		if (inputBehaviour == null)
 			return;
@@ -228,6 +230,7 @@ public class FunnelBlockEntity extends SmartBlockEntity implements IHaveHovering
 				invVersionTracker.awaitNewVersion(invManipulation.getInventory());
 			return;
 		}
+		invVersionTracker.incrementVersion(invManipulation.getInventory());
 		flap(false);
 		onTransfer(stack);
 		inputBehaviour.handleInsertion(stack, facing, false);
@@ -256,10 +259,9 @@ public class FunnelBlockEntity extends SmartBlockEntity implements IHaveHovering
 	@Override
 	public void addBehaviours(List<BlockEntityBehaviour> behaviours) {
 		invManipulation =
-			new InvManipulationBehaviour(this, (w, p, s) -> new BlockFace(p, AbstractFunnelBlock.getFunnelFacing(s)
-				.getOpposite()));
+				new InvManipulationBehaviour(this, (w, p, s) -> new BlockFace(p, AbstractFunnelBlock.getFunnelFacing(s)
+						.getOpposite()));
 		behaviours.add(invManipulation);
-		
 		behaviours.add(invVersionTracker = new VersionedInventoryTrackerBehaviour(this));
 
 		filtering = new FilteringBehaviour(this, new FunnelFilterSlotPositioning());
@@ -267,9 +269,9 @@ public class FunnelBlockEntity extends SmartBlockEntity implements IHaveHovering
 		filtering.onlyActiveWhen(this::supportsFiltering);
 		filtering.withCallback($ -> invVersionTracker.reset());
 		behaviours.add(filtering);
-		
+
 		behaviours.add(new DirectBeltInputBehaviour(this).onlyInsertWhen(this::supportsDirectBeltInput)
-			.setInsertionHandler(this::handleDirectBeltInput));
+				.setInsertionHandler(this::handleDirectBeltInput));
 		registerAwardables(behaviours, AllAdvancements.FUNNEL);
 	}
 
@@ -319,7 +321,7 @@ public class FunnelBlockEntity extends SmartBlockEntity implements IHaveHovering
 	public void flap(boolean inward) {
 		if (!level.isClientSide) {
 			AllPackets.getChannel()
-				.sendToClientsTracking(new FunnelFlapPacket(this, inward), this);
+					.sendToClientsTracking(new FunnelFlapPacket(this, inward), this);
 		} else {
 			flap.setValue(inward ? 1 : -1);
 			AllSoundEvents.FUNNEL_FLAP.playAt(level, worldPosition, 1, 1, true);
@@ -329,8 +331,8 @@ public class FunnelBlockEntity extends SmartBlockEntity implements IHaveHovering
 	public boolean hasFlap() {
 		BlockState blockState = getBlockState();
 		if (!AbstractFunnelBlock.getFunnelFacing(blockState)
-			.getAxis()
-			.isHorizontal())
+				.getAxis()
+				.isHorizontal())
 			return false;
 		return true;
 	}
@@ -340,14 +342,14 @@ public class FunnelBlockEntity extends SmartBlockEntity implements IHaveHovering
 		if (!(blockState.getBlock() instanceof BeltFunnelBlock))
 			return -1 / 16f;
 		switch (blockState.getValue(BeltFunnelBlock.SHAPE)) {
-		default:
-		case RETRACTED:
-			return 0;
-		case EXTENDED:
-			return 8 / 16f;
-		case PULLING:
-		case PUSHING:
-			return -2 / 16f;
+			default:
+			case RETRACTED:
+				return 0;
+			case EXTENDED:
+				return 8 / 16f;
+			case PULLING:
+			case PUSHING:
+				return -2 / 16f;
 		}
 	}
 
@@ -368,14 +370,14 @@ public class FunnelBlockEntity extends SmartBlockEntity implements IHaveHovering
 
 	public void onTransfer(ItemStack stack) {
 		AllBlocks.SMART_OBSERVER.get()
-			.onFunnelTransfer(level, worldPosition, stack);
+				.onFunnelTransfer(level, worldPosition, stack);
 		award(AllAdvancements.FUNNEL);
 	}
 
 	private LerpedFloat createChasingFlap() {
 		return LerpedFloat.linear()
-			.startWithValue(.25f)
-			.chase(0, .05f, Chaser.EXP);
+				.startWithValue(.25f)
+				.chase(0, .05f, Chaser.EXP);
 	}
 
 }
