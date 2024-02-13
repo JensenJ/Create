@@ -7,6 +7,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map.Entry;
 
+import io.github.fabricators_of_create.porting_lib.transfer.item.ItemStackHandlerSlot;
+import net.fabricmc.fabric.api.transfer.v1.storage.StoragePreconditions;
+
 import org.apache.commons.lang3.tuple.Pair;
 import org.jetbrains.annotations.Nullable;
 
@@ -68,6 +71,14 @@ public class MechanicalCrafterBlockEntity extends KineticBlockEntity implements 
 			});
 		}
 
+		public long insertItemIntoCrafter(ItemVariant resource, long maxAmount, TransactionContext transaction){
+			StoragePreconditions.notBlankNotNegative(resource, maxAmount);
+			long inserted = 0;
+			ItemStackHandlerSlot slot = getSlot(0);
+			inserted = slot.insert(resource, maxAmount - inserted, transaction);
+			return inserted;
+		}
+
 		@Override
 		public long insert(ItemVariant resource, long maxAmount, TransactionContext transaction) {
 			if (blockEntity.phase != Phase.IDLE) {
@@ -76,8 +87,8 @@ public class MechanicalCrafterBlockEntity extends KineticBlockEntity implements 
 			if (blockEntity.covered) {
 				return 0;
 			}
-			long inserted = super.insert(resource, maxAmount, transaction);
-			System.out.println("Inserted amount: " + inserted);
+
+			long inserted = insertItemIntoCrafter(resource, maxAmount, transaction);
 			if (inserted != 0)
 				TransactionCallback.onSuccess(transaction, () -> blockEntity.getLevel()
 						.playSound(null, blockEntity.getBlockPos(), SoundEvents.ITEM_FRAME_ADD_ITEM, SoundSource.BLOCKS, .25f,
