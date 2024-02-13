@@ -368,7 +368,7 @@ public class DepotBehaviour extends BlockEntityBehaviour {
 //		return lazyItemHandler.cast();
 //	}
 
-	private boolean isOccupied(Direction side) {
+	private boolean isOccupied(Direction side){
 		if (!getHeldItemStack().isEmpty() && !canMergeItems())
 			return true;
 		if (!isOutputEmpty() && !canMergeItems())
@@ -377,11 +377,11 @@ public class DepotBehaviour extends BlockEntityBehaviour {
 			return true;
 		return false;
 	}
-	
+
 	private ItemStack tryInsertingFromSide(TransportedItemStack transportedStack, Direction side, boolean simulate) {
 		ItemStack inserted = transportedStack.stack;
 
-		if (isOccupied(side))
+		if(isOccupied(side))
 			return inserted;
 
 		int size = transportedStack.stack.getCount();

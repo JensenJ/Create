@@ -10,7 +10,6 @@ import java.util.UUID;
 
 import com.simibubi.create.foundation.utility.AdventureUtil;
 
-import io.github.fabricators_of_create.porting_lib.entity.IEntityAdditionalSpawnData;
 import io.github.fabricators_of_create.porting_lib.mixin.accessors.common.accessor.EntityAccessor;
 import io.github.fabricators_of_create.porting_lib.util.EnvExecutor;
 
@@ -43,6 +42,7 @@ import com.simibubi.create.foundation.collision.Matrix3d;
 import com.simibubi.create.foundation.mixin.accessor.ServerLevelAccessor;
 import com.simibubi.create.foundation.utility.AngleHelper;
 import com.simibubi.create.foundation.utility.VecHelper;
+import io.github.fabricators_of_create.porting_lib.entity.ExtraSpawnDataEntity;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -84,7 +84,7 @@ import net.minecraft.world.phys.Vec3;
 
 import org.jetbrains.annotations.Nullable;
 
-public abstract class AbstractContraptionEntity extends Entity implements IEntityAdditionalSpawnData {
+public abstract class AbstractContraptionEntity extends Entity implements ExtraSpawnDataEntity {
 
 	private static final EntityDataAccessor<Boolean> STALLED =
 		SynchedEntityData.defineId(AbstractContraptionEntity.class, EntityDataSerializers.BOOLEAN);
@@ -228,9 +228,6 @@ public abstract class AbstractContraptionEntity extends Entity implements IEntit
 	}
 
 	public Vec3 getPassengerPosition(Entity passenger, float partialTicks) {
-		if (contraption == null)
-			return null;
-
 		UUID id = passenger.getUUID();
 		if (passenger instanceof OrientedContraptionEntity) {
 			BlockPos localPos = contraption.getBearingPosOf(id);
@@ -245,7 +242,6 @@ public abstract class AbstractContraptionEntity extends Entity implements IEntit
 		BlockPos seat = contraption.getSeatOf(id);
 		if (seat == null)
 			return null;
-
 		Vec3 transformedVector = toGlobalVector(Vec3.atLowerCornerOf(seat)
 			.add(.5, passenger.getMyRidingOffset() + ySize - .15f, .5), partialTicks)
 				.add(VecHelper.getCenterOf(BlockPos.ZERO))

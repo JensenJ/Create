@@ -11,6 +11,7 @@ import java.util.function.Supplier;
 
 import org.jetbrains.annotations.Nullable;
 
+import com.simibubi.create.Create;
 import com.simibubi.create.CreateClient;
 import com.simibubi.create.content.decoration.encasing.CasingConnectivity;
 import com.simibubi.create.content.fluids.VirtualFluid;
@@ -54,12 +55,8 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockBehaviour.Properties;
 
 public class CreateRegistrate extends AbstractRegistrate<CreateRegistrate> {
-	private static final Map<RegistryEntry<?>, ResourceKey<CreativeModeTab>> TAB_LOOKUP = new IdentityHashMap<>();
-
 	@Nullable
 	protected Function<Item, TooltipModifier> currentTooltipModifierFactory;
-	@Nullable
-	protected ResourceKey<CreativeModeTab> currentTab;
 
 	protected CreateRegistrate(String modid) {
 		super(modid);
@@ -67,10 +64,6 @@ public class CreateRegistrate extends AbstractRegistrate<CreateRegistrate> {
 
 	public static CreateRegistrate create(String modid) {
 		return new CreateRegistrate(modid);
-	}
-
-	public static boolean isInCreativeTab(RegistryEntry<?> entry, ResourceKey<CreativeModeTab> tab) {
-		return TAB_LOOKUP.get(entry) == tab;
 	}
 
 	public CreateRegistrate setTooltipModifierFactory(@Nullable Function<Item, TooltipModifier> factory) {
@@ -84,10 +77,15 @@ public class CreateRegistrate extends AbstractRegistrate<CreateRegistrate> {
 	}
 
 	private static Map<RegistryEntry<?>, ResourceKey<CreativeModeTab>> tabLookup = new IdentityHashMap<>();
+	private ResourceKey<CreativeModeTab> currentTab;
 
-	public CreateRegistrate setCreativeTab(ResourceKey<CreativeModeTab> tab) {
+	public CreateRegistrate useCreativeTab(ResourceKey<CreativeModeTab> tab) {
 		this.currentTab = tab;
 		return this;
+	}
+
+	public boolean isInCreativeTab(RegistryEntry<?> entry, ResourceKey<CreativeModeTab> tab) {
+		return tabLookup.get(entry) == tab;
 	}
 
 	@Override
@@ -100,9 +98,8 @@ public class CreateRegistrate extends AbstractRegistrate<CreateRegistrate> {
 				TooltipModifier.REGISTRY.registerDeferred(entry.getId(), currentTooltipModifierFactory);
 			}
 		}
-		if (currentTab != null) {
-			TAB_LOOKUP.put(entry, currentTab);
-		}
+		if (currentTab != null)
+			tabLookup.put(entry, currentTab);
 		return entry;
 	}
 
@@ -168,8 +165,8 @@ public class CreateRegistrate extends AbstractRegistrate<CreateRegistrate> {
 //		BiFunction<FluidAttributes.Builder, Fluid, FluidAttributes> attributesFactory,
 		NonNullFunction<SimpleFlowableFluid.Properties, T> factory) {
 		return entry(name,
-			c -> new VirtualFluidBuilder<>(self(), self(), name, c, new ResourceLocation(getModid(), "fluid/" + name + "_still"),
-				new ResourceLocation(getModid(), "fluid/" + name + "_flow"), /*attributesFactory, */factory));
+			c -> new VirtualFluidBuilder<>(self(), self(), name, c, Create.asResource("fluid/" + name + "_still"),
+				Create.asResource("fluid/" + name + "_flow"), /*attributesFactory, */factory));
 	}
 
 	public <T extends SimpleFlowableFluid> FluidBuilder<T, CreateRegistrate> virtualFluid(String name, ResourceLocation still, ResourceLocation flow,
@@ -182,8 +179,8 @@ public class CreateRegistrate extends AbstractRegistrate<CreateRegistrate> {
 
 	public FluidBuilder<VirtualFluid, CreateRegistrate> virtualFluid(String name) {
 		return entry(name,
-			c -> new VirtualFluidBuilder<>(self(), self(), name, c, new ResourceLocation(getModid(), "fluid/" + name + "_still"),
-				new ResourceLocation(getModid(), "fluid/" + name + "_flow"), /*null, */VirtualFluid::new));
+			c -> new VirtualFluidBuilder<>(self(), self(), name, c, Create.asResource("fluid/" + name + "_still"),
+				Create.asResource("fluid/" + name + "_flow"), /*null, */VirtualFluid::new));
 	}
 
 	public FluidBuilder<VirtualFluid, CreateRegistrate> virtualFluid(String name, ResourceLocation still, ResourceLocation flow) {
@@ -193,13 +190,13 @@ public class CreateRegistrate extends AbstractRegistrate<CreateRegistrate> {
 	}
 
 	public FluidBuilder<SimpleFlowableFluid.Flowing, CreateRegistrate> standardFluid(String name) {
-		return fluid(name, new ResourceLocation(getModid(), "fluid/" + name + "_still"), new ResourceLocation(getModid(), "fluid/" + name + "_flow"));
+		return fluid(name, Create.asResource("fluid/" + name + "_still"), Create.asResource("fluid/" + name + "_flow"));
 	}
 
 /*
 	public FluidBuilder<ForgeFlowingFluid.Flowing, CreateRegistrate> standardFluid(String name,
 		FluidBuilder.FluidTypeFactory typeFactory) {
-		return fluid(name, new ResourceLocation(getModid(), "fluid/" + name + "_still"), new ResourceLocation(getModid(), "fluid/" + name + "_flow"),
+		return fluid(name, Create.asResource("fluid/" + name + "_still"), Create.asResource("fluid/" + name + "_flow"),
 			typeFactory);
 	}
 

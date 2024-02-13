@@ -32,10 +32,10 @@ public class SmartObserverBlockEntity extends SmartBlockEntity {
 	private FilteringBehaviour filtering;
 	private InvManipulationBehaviour observedInventory;
 	private TankManipulationBehaviour observedTank;
-	
+
 	private VersionedInventoryTrackerBehaviour invVersionTracker;
 	private boolean sustainSignal;
-	
+
 	public int turnOffTicks = 0;
 
 	public SmartObserverBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
@@ -46,7 +46,7 @@ public class SmartObserverBlockEntity extends SmartBlockEntity {
 	@Override
 	public void addBehaviours(List<BlockEntityBehaviour> behaviours) {
 		behaviours.add(filtering = new FilteringBehaviour(this, new FilteredDetectorFilterSlot(false))
-			.withCallback($ -> invVersionTracker.reset()));
+				.withCallback($ -> invVersionTracker.reset()));
 		behaviours.add(invVersionTracker = new VersionedInventoryTrackerBehaviour(this));
 
 		InterfaceProvider towardBlockFacing =
@@ -59,10 +59,10 @@ public class SmartObserverBlockEntity extends SmartBlockEntity {
 	@Override
 	public void tick() {
 		super.tick();
-		
+
 		if (level.isClientSide())
 			return;
-		
+
 		BlockState state = getBlockState();
 		if (turnOffTicks > 0) {
 			turnOffTicks--;
@@ -122,8 +122,8 @@ public class SmartObserverBlockEntity extends SmartBlockEntity {
 			if (!skipInv) {
 				sustainSignal = false;
 				if (!observedInventory.simulate()
-					.extract()
-					.isEmpty()) {
+						.extract()
+						.isEmpty()) {
 					sustainSignal = true;
 					activate();
 					return;

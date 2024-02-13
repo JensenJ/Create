@@ -2,8 +2,6 @@ package com.simibubi.create.foundation.blockEntity.behaviour;
 
 import com.simibubi.create.foundation.utility.AdventureUtil;
 
-import net.fabricmc.fabric.api.entity.FakePlayer;
-
 import org.apache.commons.lang3.mutable.MutableBoolean;
 
 import com.simibubi.create.AllBlocks;
@@ -66,7 +64,7 @@ public class ValueSettingsInputHandler {
 				sidedSlot.fromSide(ray.getDirection());
 			}
 
-			boolean fakePlayer = player instanceof FakePlayer;
+			boolean fakePlayer = player.isFake();
 			if (!valueSettingsBehaviour.testHit(ray.getLocation()) && !fakePlayer)
 				continue;
 

@@ -34,7 +34,7 @@ public class ClipboardBlockItem extends BlockItem {
 		Player player = context.getPlayer();
 		if (player == null)
 			return InteractionResult.PASS;
-		if (player.isShiftKeyDown())
+		if (player.isSteppingCarefully())
 			return super.useOn(context);
 		return use(context.getLevel(), player, context.getHand()).getResult();
 	}

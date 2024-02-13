@@ -13,7 +13,7 @@
 //public class StorageDrawers {
 //
 //	public static boolean isDrawer(BlockEntity be) {
-//		return be != null && Mods.STORAGEDRAWERS.id()
+//		return be != null && Mods.STORAGEDRAWERS.asId()
 //				.equals(BlockEntityType.getKey(be.getType())
 //						.getNamespace());
 //	}

@@ -30,7 +30,6 @@ public class AllCommands {
 				.then(OverlayConfigCommand.register())
 				.then(DumpRailwaysCommand.register())
 				.then(FixLightingCommand.register())
-				.then(DebugInfoCommand.register())
 				.then(HighlightCommand.register())
 				.then(KillTrainCommand.register())
 				.then(PassengerCommand.register())
@@ -39,7 +38,6 @@ public class AllCommands {
 				.then(PonderCommand.register())
 				.then(CloneCommand.register())
 				.then(GlueCommand.register())
-
 
 				// utility
 				.then(util);

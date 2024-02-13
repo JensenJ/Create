@@ -41,7 +41,7 @@ public class SmartChuteBlockEntity extends ChuteBlockEntity {
 		BlockState blockState = getBlockState();
 		return blockState.hasProperty(SmartChuteBlock.POWERED) && !blockState.getValue(SmartChuteBlock.POWERED);
 	}
-	
+
 	@Override
 	protected boolean canOutputItems() {
 		BlockState blockState = getBlockState();
@@ -51,8 +51,7 @@ public class SmartChuteBlockEntity extends ChuteBlockEntity {
 	@Override
 	public void addBehaviours(List<BlockEntityBehaviour> behaviours) {
 		behaviours.add(filtering =
-			new FilteringBehaviour(this, new SmartChuteFilterSlotPositioning()).showCountWhen(this::isExtracting)
-				.withCallback($ -> invVersionTracker.reset()));
+			new FilteringBehaviour(this, new SmartChuteFilterSlotPositioning()).showCountWhen(this::isExtracting).withCallback($ -> invVersionTracker.reset()));
 		super.addBehaviours(behaviours);
 	}
 

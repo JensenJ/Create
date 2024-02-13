@@ -5,7 +5,7 @@ import com.simibubi.create.AllItems;
 import com.simibubi.create.content.fluids.potion.PotionFluidHandler;
 import com.simibubi.create.foundation.fluid.FluidHelper;
 import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
-import io.github.fabricators_of_create.porting_lib.fluids.FluidStack;
+import io.github.fabricators_of_create.porting_lib.util.FluidStack;
 
 import net.fabricmc.fabric.api.transfer.v1.context.ContainerItemContext;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants;
@@ -56,7 +56,7 @@ public class GenericItemFilling {
 		if (stack.getItem() == Items.MILK_BUCKET)
 			return false;
 
-		Storage<FluidVariant> tank = FluidStorage.ITEM.find(stack, ContainerItemContext.withConstant(stack));
+		Storage<FluidVariant> tank = FluidStorage.ITEM.find(stack, ContainerItemContext.withInitial(stack));
 		if (tank == null)
 			return false;
 		if (!isFluidHandlerValid(stack, tank))
@@ -70,7 +70,7 @@ public class GenericItemFilling {
 		if (stack.getItem() == Items.BUCKET && canFillBucketInternally(availableFluid))
 			return FluidConstants.BUCKET;
 
-		Storage<FluidVariant> tank = FluidStorage.ITEM.find(stack, ContainerItemContext.withConstant(stack));
+		Storage<FluidVariant> tank = FluidStorage.ITEM.find(stack, ContainerItemContext.withInitial(stack));
 		if (tank == null)
 			return -1;
 
@@ -126,7 +126,7 @@ public class GenericItemFilling {
 
 		ItemStack split = stack.copy();
 		split.setCount(1);
-		ContainerItemContext ctx = ContainerItemContext.withConstant(split);
+		ContainerItemContext ctx = ContainerItemContext.withInitial(split);
 		Storage<FluidVariant> tank = FluidStorage.ITEM.find(split, ctx);
 		if (tank == null)
 			return ItemStack.EMPTY;

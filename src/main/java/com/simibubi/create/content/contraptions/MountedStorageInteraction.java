@@ -125,11 +125,13 @@ public class MountedStorageInteraction {
 
 		@Override
 		public void setItem(int slot, ItemStack stack) {
-			if (!oob(slot)) {
-				ItemStackHandler handler = handlerForSlot(slot);
-				slot = actualSlot(slot);
-				handler.setStackInSlot(slot, stack.copy());
+			if (oob(slot)){
+				return;
 			}
+
+			ItemStackHandler handler = handlerForSlot(slot);
+			slot = actualSlot(slot);
+			handler.setStackInSlot(slot, stack.copy());
 		}
 
 		@Override

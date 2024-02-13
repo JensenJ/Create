@@ -4,7 +4,7 @@ import java.util.List;
 
 import com.simibubi.create.content.contraptions.behaviour.MovementBehaviour;
 import com.simibubi.create.content.contraptions.behaviour.MovementContext;
-import com.simibubi.create.content.logistics.filter.FilterItemStack;
+import com.simibubi.create.content.logistics.filter.FilterItem;
 import com.simibubi.create.foundation.item.ItemHelper;
 
 import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
@@ -72,14 +72,14 @@ public class FunnelMovementBehaviour implements MovementBehaviour {
 			.isEmpty())
 			return;
 
-		FilterItemStack filter = context.getFilterFromBE();
+		ItemStack filter = getFilter(context);
 		int filterAmount = context.blockEntityData.getInt("FilterAmount");
 		boolean upTo = context.blockEntityData.getBoolean("UpTo");
 		if (filterAmount <= 0)
 			filterAmount = hasFilter ? 64 : 1;
 
 		ItemStack extract = ItemHelper.extract(context.contraption.getSharedInventory(),
-			s -> filter.test(world, s),
+			s -> FilterItem.test(world, s, filter),
 			upTo ? ItemHelper.ExtractionCountMode.UPTO : ItemHelper.ExtractionCountMode.EXACTLY, filterAmount, false);
 
 		if (extract.isEmpty())
@@ -98,14 +98,14 @@ public class FunnelMovementBehaviour implements MovementBehaviour {
 	private void succ(MovementContext context, BlockPos pos) {
 		Level world = context.world;
 		List<ItemEntity> items = world.getEntitiesOfClass(ItemEntity.class, new AABB(pos));
-		FilterItemStack filter = context.getFilterFromBE();
+		ItemStack filter = getFilter(context);
 
 		try (Transaction t = TransferUtil.getTransaction()) {
 			for (ItemEntity item : items) {
 				if (!item.isAlive())
 					continue;
 				ItemStack toInsert = item.getItem();
-				if (toInsert.isEmpty() || (!filter.test(context.world, toInsert)))
+				if (toInsert.isEmpty() || (!filter.isEmpty() && !FilterItem.test(context.world, toInsert, filter)))
 					continue;
 				long inserted = TransferUtil.insertItem(context.contraption.getSharedInventory(), toInsert);
 				if (inserted == 0)
@@ -126,6 +126,10 @@ public class FunnelMovementBehaviour implements MovementBehaviour {
 	@Override
 	public boolean renderAsNormalBlockEntity() {
 		return true;
+	}
+
+	private ItemStack getFilter(MovementContext context) {
+		return hasFilter ? ItemStack.of(context.blockEntityData.getCompound("Filter")) : ItemStack.EMPTY;
 	}
 
 }

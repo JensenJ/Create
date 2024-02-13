@@ -135,7 +135,7 @@ public class ClipboardValueSettingsHandler {
 
 		if (player != null && player.isSpectator() || AdventureUtil.isAdventure(player))
 			return InteractionResult.PASS;
-		if (player.isShiftKeyDown())
+		if (player.isSteppingCarefully())
 			return InteractionResult.PASS;
 		if (!(world.getBlockEntity(pos) instanceof SmartBlockEntity smartBE))
 			return InteractionResult.PASS;

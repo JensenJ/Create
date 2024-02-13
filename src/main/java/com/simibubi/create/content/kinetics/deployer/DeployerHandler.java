@@ -156,13 +156,13 @@ public class DeployerHandler {
 		if (!entities.isEmpty()) {
 			Entity entity = entities.get(world.random.nextInt(entities.size()));
 			boolean success = false;
-			//entity.startCapturingDrops();
+			entity.startCapturingDrops();
 
 			// Use on entity
 			if (mode == Mode.USE) {
 				InteractionResult cancelResult = UseEntityCallback.EVENT.invoker().interact(player, world, hand, entity, new EntityHitResult(entity));
 				if (cancelResult == InteractionResult.FAIL) {
-					//entity.finishCapturingDrops();
+					entity.finishCapturingDrops();
 					return;
 				}
 				if (cancelResult == null || cancelResult == InteractionResult.PASS) {
@@ -203,9 +203,9 @@ public class DeployerHandler {
 				success = true;
 			}
 
-			//List<ItemEntity> capturedDrops = entity.finishCapturingDrops();
-			//capturedDrops.forEach(e -> player.getInventory()
-			//	.placeItemBackInInventory(e.getItem()));
+			List<ItemEntity> capturedDrops = entity.finishCapturingDrops();
+			capturedDrops.forEach(e -> player.getInventory()
+				.placeItemBackInInventory(e.getItem()));
 			if (success)
 				return;
 		}
@@ -297,6 +297,9 @@ public class DeployerHandler {
 			return;
 		if (useItem == null)
 			return;
+		if (item instanceof BlockItem && !(item instanceof CartAssemblerBlockItem)
+			&& !clickedState.canBeReplaced(new BlockPlaceContext(itemusecontext)))
+			return;
 
 		// Reposition fire placement for convenience
 		if (item == Items.FLINT_AND_STEEL) {
@@ -318,10 +321,6 @@ public class DeployerHandler {
 				player.placedTracks = true;
 			return;
 		}
-
-		if (item instanceof BlockItem && !(item instanceof CartAssemblerBlockItem)
-				&& !clickedState.canBeReplaced(new BlockPlaceContext(itemusecontext)))
-			return;
 		if (item == Items.ENDER_PEARL)
 			return;
 		if (AllItemTags.DEPLOYABLE_DRINK.matches(item))

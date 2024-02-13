@@ -3,6 +3,8 @@ package com.simibubi.create.foundation.gui.widget;
 import java.util.function.Consumer;
 import java.util.function.UnaryOperator;
 
+import javax.annotation.Nonnull;
+
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.simibubi.create.foundation.gui.element.RenderElement;
 import com.simibubi.create.foundation.gui.element.ScreenElement;
@@ -130,7 +132,7 @@ public class ElementWidget extends AbstractSimiWidget {
 	}
 
 	@Override
-	public void doRender(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
+	public void renderButton(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
 		PoseStack ms = graphics.pose();
 		ms.pushPose();
 		ms.translate(getX() + paddingX, getY() + paddingY, z);

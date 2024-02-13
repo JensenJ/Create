@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 
 import com.simibubi.create.content.contraptions.Contraption.ContraptionInvWrapper;
 import com.simibubi.create.content.fluids.tank.FluidTankBlockEntity;
+import com.simibubi.create.foundation.blockEntity.behaviour.inventory.VersionedInventoryWrapper;
 import com.simibubi.create.foundation.fluid.CombinedTankWrapper;
 import com.simibubi.create.foundation.utility.Components;
 import com.simibubi.create.foundation.utility.NBTHelper;
@@ -18,7 +19,7 @@ import com.simibubi.create.foundation.utility.NBTHelper;
 import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
 import io.github.fabricators_of_create.porting_lib.transfer.fluid.FluidTank;
 import io.github.fabricators_of_create.porting_lib.transfer.item.ItemStackHandler;
-import io.github.fabricators_of_create.porting_lib.fluids.FluidStack;
+import io.github.fabricators_of_create.porting_lib.util.FluidStack;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
@@ -185,16 +186,14 @@ public class MountedStorageManager {
 		}
 	}
 
-	//Temporary fix until moving contraptions no longer crash when extracting items
-	public static <T> void clearItemStorage(Storage<T> storage) {
+	public static <T> void clearContraptionStorage(Storage<T> storage) {
 		if (!storage.supportsExtraction()) {
 			return;
 		}
 		try (Transaction t = TransferUtil.getTransaction()) {
 			for (StorageView<T> view : storage.nonEmptyViews()) {
 				long amount = view.getAmount();
-				if(amount == 0)
-					continue;
+				if(amount == 0) { return; }
 				view.extract(view.getResource(), amount, t);
 			}
 			t.commit();
@@ -204,7 +203,7 @@ public class MountedStorageManager {
 	public void clear() {
 		for (Storage<ItemVariant> storage : inventory.parts) {
 			if (!(storage instanceof ContraptionInvWrapper wrapper) || !wrapper.isExternal) {
-				clearItemStorage(storage);
+				clearContraptionStorage(storage);
 			}
 		}
 		TransferUtil.clearStorage(fluidInventory);

@@ -79,7 +79,7 @@ public class SmartObserverBlock extends DirectedDirectionalBlock implements IBE<
 		if (preferredFacing == null) {
 			Direction facing = context.getNearestLookingDirection();
 			preferredFacing = context.getPlayer() != null && context.getPlayer()
-				.isShiftKeyDown() ? facing : facing.getOpposite();
+				.isSteppingCarefully() ? facing : facing.getOpposite();
 		}
 
 		if (preferredFacing.getAxis() == Axis.Y) {
@@ -97,7 +97,7 @@ public class SmartObserverBlock extends DirectedDirectionalBlock implements IBE<
 
 	@Override
 	public int getSignal(BlockState blockState, BlockGetter blockAccess, BlockPos pos, Direction side) {
-		return isSignalSource(blockState) && (side == null || side != getTargetDirection(blockState)
+		return isSignalSource(blockState) && (side == null || side != blockState.getValue(FACING)
 			.getOpposite()) ? 15 : 0;
 	}
 

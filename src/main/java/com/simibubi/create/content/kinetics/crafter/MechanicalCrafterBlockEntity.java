@@ -70,11 +70,14 @@ public class MechanicalCrafterBlockEntity extends KineticBlockEntity implements 
 
 		@Override
 		public long insert(ItemVariant resource, long maxAmount, TransactionContext transaction) {
-			if (blockEntity.phase != Phase.IDLE)
+			if (blockEntity.phase != Phase.IDLE) {
 				return 0;
-			if (blockEntity.covered)
+			}
+			if (blockEntity.covered) {
 				return 0;
+			}
 			long inserted = super.insert(resource, maxAmount, transaction);
+			System.out.println("Inserted amount: " + inserted);
 			if (inserted != 0)
 				TransactionCallback.onSuccess(transaction, () -> blockEntity.getLevel()
 						.playSound(null, blockEntity.getBlockPos(), SoundEvents.ITEM_FRAME_ADD_ITEM, SoundSource.BLOCKS, .25f,

@@ -22,8 +22,6 @@ public enum Mods {
 	COMPUTERCRAFT,
 	STORAGEDRAWERS,
 	XLPACKETS,
-	CONNECTIVITY,
-	PACKETFIXER,
 
 	// fabric mods
 	SANDWICHABLE,
@@ -37,14 +35,6 @@ public enum Mods {
 
 	Mods() {
 		loaded = FabricLoader.getInstance().isModLoaded(asId());
-	}
-
-	public ResourceLocation rl(String path) {
-		return new ResourceLocation(asId(), path);
-	}
-
-	public Block getBlock(String id) {
-		return BuiltInRegistries.BLOCK.get(new ResourceLocation(asId(), id));
 	}
 
 	/**
@@ -80,5 +70,9 @@ public enum Mods {
 		if (isLoaded()) {
 			toExecute.get().run();
 		}
+	}
+
+	public Block getBlock(String id) {
+		return BuiltInRegistries.BLOCK.get(new ResourceLocation(asId(), id));
 	}
 }

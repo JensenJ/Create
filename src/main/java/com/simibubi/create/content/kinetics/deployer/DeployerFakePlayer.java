@@ -7,10 +7,8 @@ import java.util.UUID;
 
 import javax.annotation.Nullable;
 
-import io.github.fabricators_of_create.porting_lib.entity.events.EntityEvents;
+import io.github.fabricators_of_create.porting_lib.entity.events.EntityEvents.EntitySizeEvent;
 import io.github.fabricators_of_create.porting_lib.util.UsernameCache;
-
-import net.fabricmc.fabric.api.entity.FakePlayer;
 
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -19,6 +17,7 @@ import com.simibubi.create.foundation.utility.Lang;
 import com.simibubi.create.infrastructure.config.AllConfigs;
 import com.simibubi.create.infrastructure.config.CKinetics;
 
+import io.github.fabricators_of_create.porting_lib.fake_players.FakePlayer;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.core.BlockPos;
@@ -106,9 +105,9 @@ public class DeployerFakePlayer extends FakePlayer {
 		return owner == null ? super.getUUID() : owner;
 	}
 
-	public static void deployerHasEyesOnHisFeet(EntityEvents.Size event) {
-		if (event.getEntity() instanceof DeployerFakePlayer)
-			event.setNewEyeHeight(0);
+	public static void deployerHasEyesOnHisFeet(EntitySizeEvent event) {
+		if (event.entity instanceof DeployerFakePlayer)
+			event.eyeHeight = 0;
 	}
 
 	public static boolean deployerCollectsDropsFromKilledEntities(LivingEntity target, DamageSource source, Collection<ItemEntity> drops, int lootingLevel, boolean recentlyHit) {
@@ -141,30 +140,26 @@ public class DeployerFakePlayer extends FakePlayer {
 		return i;
 	}
 
-	public static boolean entitiesDontRetaliate(LivingEntity target, DamageSource source, float amount) {
-		if(!(source.getEntity() instanceof DeployerFakePlayer)){
-			return false;
-		}
+	public static void entitiesDontRetaliate(LivingEntity entityLiving, LivingEntity target) {
+		if (!(target instanceof DeployerFakePlayer))
+			return;
+		if (!(entityLiving instanceof Mob))
+			return;
+		Mob mob = (Mob) entityLiving;
 
-		if (!(target instanceof Mob mob)) {
-			return false;
-		}
-
-        CKinetics.DeployerAggroSetting setting = AllConfigs.server().kinetics.ignoreDeployerAttacks.get();
+		CKinetics.DeployerAggroSetting setting = AllConfigs.server().kinetics.ignoreDeployerAttacks.get();
 
 		switch (setting) {
 		case ALL:
 			mob.setTarget(null);
 			break;
 		case CREEPERS:
-			if (mob instanceof Creeper creeper) {
-                creeper.setTarget(null);
-			}
+			if (mob instanceof Creeper)
+				mob.setTarget(null);
 			break;
 		case NONE:
 		default:
 		}
-		return false; // true would short-circuit the event
 	}
 
 	// Credit to Mekanism for this approach. Helps fake players get past claims and

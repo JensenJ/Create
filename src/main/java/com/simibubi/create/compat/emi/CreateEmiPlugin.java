@@ -76,7 +76,7 @@ import dev.emi.emi.api.stack.EmiIngredient;
 import dev.emi.emi.api.stack.EmiStack;
 import dev.emi.emi.api.widget.Bounds;
 import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
-import io.github.fabricators_of_create.porting_lib.fluids.FluidStack;
+import io.github.fabricators_of_create.porting_lib.util.FluidStack;
 import net.fabricmc.fabric.api.transfer.v1.context.ContainerItemContext;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidStorage;
@@ -336,7 +336,7 @@ public class CreateEmiPlugin implements EmiPlugin {
 					// This will miss fluid containers that hold a minimum of over 1000 L, but perhaps that's preferable.
 					FluidStack fs = new FluidStack(fluid, FluidConstants.BUCKET);
 					ItemStack copy = is.copy();
-					ContainerItemContext ctx = ContainerItemContext.withConstant(copy);
+					ContainerItemContext ctx = ContainerItemContext.withInitial(copy);
 					Storage<FluidVariant> storage = ctx.find(FluidStorage.ITEM);
 					if (storage != null && GenericItemFilling.isFluidHandlerValid(copy, storage)) {
 						long inserted = 0;
@@ -361,7 +361,7 @@ public class CreateEmiPlugin implements EmiPlugin {
 					}
 				}
 				ItemStack copy = is.copy();
-				ContainerItemContext ctx = ContainerItemContext.withConstant(copy);
+				ContainerItemContext ctx = ContainerItemContext.withInitial(copy);
 				Storage<FluidVariant> storage = ctx.find(FluidStorage.ITEM);
 				if (storage != null) {
 					FluidStack extracted = TransferUtil.extractAnyFluid(storage, FluidConstants.BUCKET);

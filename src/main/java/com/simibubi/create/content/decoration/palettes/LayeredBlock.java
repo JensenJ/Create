@@ -18,7 +18,7 @@ public class LayeredBlock extends RotatedPillarBlock {
 				.relative(pContext.getClickedFace()
 					.getOpposite()));
 		if (placedOn.getBlock() == this && (pContext.getPlayer() == null || !pContext.getPlayer()
-			.isShiftKeyDown()))
+			.isSteppingCarefully()))
 			stateForPlacement = stateForPlacement.setValue(AXIS, placedOn.getValue(AXIS));
 		return stateForPlacement;
 	}

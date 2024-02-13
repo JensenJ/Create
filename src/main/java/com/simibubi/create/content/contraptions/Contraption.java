@@ -21,6 +21,8 @@ import java.util.function.BiConsumer;
 
 import javax.annotation.Nullable;
 
+import com.simibubi.create.foundation.blockEntity.behaviour.inventory.VersionedInventoryWrapper;
+
 import io.github.fabricators_of_create.porting_lib.mixin.accessors.common.accessor.HashMapPaletteAccessor;
 
 import org.apache.commons.lang3.tuple.MutablePair;
@@ -84,7 +86,7 @@ import com.simibubi.create.foundation.utility.NBTProcessors;
 import com.simibubi.create.foundation.utility.UniqueLinkedList;
 import com.simibubi.create.infrastructure.config.AllConfigs;
 
-import io.github.fabricators_of_create.porting_lib.fluids.FluidStack;
+import io.github.fabricators_of_create.porting_lib.util.FluidStack;
 import io.github.fabricators_of_create.porting_lib.util.StickinessUtil;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -1382,7 +1384,7 @@ public abstract class Contraption {
 		return blocks.values();
 	}
 
-	public Collection<BlockEntity> getSpecialRenderedBEs() {
+	public Collection<BlockEntity> getSpecialRenderedTEs() {
 		return specialRenderedBlockEntities;
 	}
 

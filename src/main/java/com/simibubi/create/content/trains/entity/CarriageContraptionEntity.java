@@ -662,7 +662,7 @@ public class CarriageContraptionEntity extends OrientedContraptionEntity {
 			if (lookAhead != null) {
 				if (spaceDown) {
 					carriage.train.manualTick = true;
-					nav.startNavigation(nav.findPathTo(lookAhead, -1));
+					nav.startNavigation(lookAhead, -1, false);
 					carriage.train.manualTick = false;
 					navDistanceTotal = nav.distanceToDestination;
 					return true;

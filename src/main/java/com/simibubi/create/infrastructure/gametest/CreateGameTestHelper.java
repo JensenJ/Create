@@ -9,6 +9,7 @@ import com.simibubi.create.content.contraptions.actors.contraptionControls.Contr
 import com.simibubi.create.content.contraptions.actors.contraptionControls.ContraptionControlsMovingInteraction;
 import com.simibubi.create.content.contraptions.behaviour.MovementContext;
 import com.simibubi.create.content.kinetics.gauge.SpeedGaugeBlockEntity;
+
 import com.simibubi.create.content.kinetics.gauge.StressGaugeBlockEntity;
 
 import org.apache.commons.lang3.tuple.MutablePair;
@@ -29,7 +30,7 @@ import com.simibubi.create.foundation.utility.RegisteredObjects;
 
 import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
 import io.github.fabricators_of_create.porting_lib.transfer.item.ItemHandlerHelper;
-import io.github.fabricators_of_create.porting_lib.fluids.FluidStack;
+import io.github.fabricators_of_create.porting_lib.util.FluidStack;
 import it.unimi.dsi.fastutil.objects.Object2LongArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2LongMap;
 import it.unimi.dsi.fastutil.objects.Object2LongMap.Entry;
@@ -352,7 +353,7 @@ public class CreateGameTestHelper extends GameTestHelper {
 		Storage<ItemVariant> storage = itemStorageAt(pos);
 		boolean noneFound = true;
 		for (Item item : items) {
-			if (storage.extract(ItemVariant.of(item), 1, null) > 0) {
+			if (storage.simulateExtract(ItemVariant.of(item), 1, null) > 0) {
 				noneFound = false;
 				break;
 			}

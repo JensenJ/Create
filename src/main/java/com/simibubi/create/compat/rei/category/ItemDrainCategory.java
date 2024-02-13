@@ -19,7 +19,7 @@ import com.simibubi.create.foundation.gui.AllGuiTextures;
 import com.simibubi.create.foundation.item.ItemHelper;
 
 import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
-import io.github.fabricators_of_create.porting_lib.fluids.FluidStack;
+import io.github.fabricators_of_create.porting_lib.util.FluidStack;
 import me.shedaniel.math.Point;
 import me.shedaniel.rei.api.client.gui.widgets.Slot;
 import me.shedaniel.rei.api.client.gui.widgets.Widget;
@@ -70,7 +70,7 @@ public class ItemDrainCategory extends CreateRecipeCategory<EmptyingRecipe> {
 			}
 
 			ItemStack copy = stack.copy();
-			ContainerItemContext ctx = ContainerItemContext.withConstant(copy);
+			ContainerItemContext ctx = ContainerItemContext.withInitial(copy);
 			Storage<FluidVariant> handler = ctx.find(FluidStorage.ITEM);
 
 			if (handler == null)

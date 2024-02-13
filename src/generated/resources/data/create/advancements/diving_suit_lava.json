@@ -1,5 +1,5 @@
 {
-  "parent": "create:foods",
+  "parent": "create:backtank",
   "criteria": {
     "0": {
       "conditions": {},
@@ -13,9 +13,9 @@
       "translate": "advancement.create.diving_suit_lava.desc"
     },
     "frame": "goal",
-    "hidden": false,
+    "hidden": true,
     "icon": {
-      "item": "create:netherite_diving_helmet",
+      "item": "create:copper_diving_helmet",
       "nbt": "{Damage:0}"
     },
     "show_toast": true,

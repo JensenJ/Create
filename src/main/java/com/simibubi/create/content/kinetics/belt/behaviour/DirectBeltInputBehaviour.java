@@ -62,7 +62,7 @@ public class DirectBeltInputBehaviour extends BlockEntityBehaviour {
 		canInsert = pred;
 		return this;
 	}
-	
+
 	public DirectBeltInputBehaviour considerOccupiedWhen(OccupiedPredicate pred) {
 		isOccupied = pred;
 		return this;
@@ -92,6 +92,10 @@ public class DirectBeltInputBehaviour extends BlockEntityBehaviour {
 		}
 	}
 
+	public boolean isOccupied(Direction side) {
+		return isOccupied.test(side);
+	}
+
 	public Storage<ItemVariant> getTargetStorage(Direction side) {
 		if (getWorld() == null)
 			return null;
@@ -105,10 +109,6 @@ public class DirectBeltInputBehaviour extends BlockEntityBehaviour {
 		return canInsert.test(side);
 	}
 
-	public boolean isOccupied(Direction side) {
-		return isOccupied.test(side);
-	}
-	
 	public ItemStack handleInsertion(ItemStack stack, Direction side, boolean simulate) {
 		return handleInsertion(new TransportedItemStack(stack), side, simulate);
 	}
@@ -131,7 +131,8 @@ public class DirectBeltInputBehaviour extends BlockEntityBehaviour {
 	public interface OccupiedPredicate {
 		public boolean test(Direction side);
 	}
-	
+
+
 	@FunctionalInterface
 	public interface AvailabilityPredicate {
 		public boolean test(Direction side);

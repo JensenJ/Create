@@ -12,7 +12,6 @@ import com.simibubi.create.AllTags.AllBlockTags;
 import com.simibubi.create.content.processing.burner.BlazeBurnerBlock;
 import com.simibubi.create.content.processing.burner.BlazeBurnerBlock.HeatLevel;
 import com.simibubi.create.foundation.utility.AttachedRegistry;
-import com.simibubi.create.foundation.utility.BlockHelper;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -74,7 +73,7 @@ public class BoilerHeaters {
 		});
 
 		registerHeaterProvider((level, pos, state) -> {
-			if (AllBlockTags.PASSIVE_BOILER_HEATERS.matches(state) && BlockHelper.isNotUnheated(state)) {
+			if (AllBlockTags.PASSIVE_BOILER_HEATERS.matches(state)) {
 				return (level1, pos1, state1) -> 0;
 			}
 			return null;

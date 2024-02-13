@@ -24,15 +24,19 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemp
 
 public class SchematicInstances {
 
-	private static final WorldAttached<Cache<Integer, SchematicWorld>> LOADED_SCHEMATICS = new WorldAttached<>($ -> CacheBuilder.newBuilder()
+	public static final WorldAttached<Cache<Integer, SchematicWorld>> loadedSchematics;
+
+	static {
+		loadedSchematics = new WorldAttached<>($ -> CacheBuilder.newBuilder()
 			.expireAfterAccess(5, TimeUnit.MINUTES)
 			.build());
+	}
 
 	public static void register() {}
 
 	@Nullable
 	public static SchematicWorld get(Level world, ItemStack schematic) {
-		Cache<Integer, SchematicWorld> map = LOADED_SCHEMATICS.get(world);
+		Cache<Integer, SchematicWorld> map = loadedSchematics.get(world);
 		int hash = getHash(schematic);
 		SchematicWorld ifPresent = map.getIfPresent(hash);
 		if (ifPresent != null)
@@ -68,7 +72,7 @@ public class SchematicInstances {
 			settings.getRotation(), settings.getMirror());
 		for (BlockEntity be : world.getBlockEntities())
 			transform.apply(be);
-
+		
 		return world;
 	}
 

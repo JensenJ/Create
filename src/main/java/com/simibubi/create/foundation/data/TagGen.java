@@ -20,8 +20,6 @@ import com.tterrag.registrate.util.nullness.NonNullFunction;
 import io.github.fabricators_of_create.porting_lib.tags.Tags;
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricTagProvider;
 
-import net.minecraft.core.HolderLookup;
-
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.core.Holder;
@@ -31,7 +29,6 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.tags.ItemTags;
-import net.minecraft.tags.TagBuilder;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.BlockItem;
@@ -89,13 +86,14 @@ public class TagGen {
 
 	private static void genBlockTags(RegistrateTagsProvider<Block> provIn) {
 		CreateTagsProvider<Block> prov = new CreateTagsProvider<>(provIn, Block::builtInRegistryHolder);
+
 		prov.tag(AllBlockTags.BRITTLE.tag)
 			.add(Blocks.BELL, Blocks.COCOA, Blocks.FLOWER_POT)
 			.addTag(BlockTags.BEDS)
 			.addTag(BlockTags.DOORS);
 		prov.tag(AllBlockTags.MOVABLE_EMPTY_COLLIDER.tag)
-			.add(Blocks.COBWEB, Blocks.POWDER_SNOW, Blocks.TRIPWIRE, Blocks.TRIPWIRE_HOOK)
-			.addTag(BlockTags.FENCE_GATES);
+				.add(Blocks.COBWEB, Blocks.POWDER_SNOW, Blocks.TRIPWIRE, Blocks.TRIPWIRE_HOOK)
+				.addTag(BlockTags.FENCE_GATES);
 
 		prov.tag(AllBlockTags.FAN_TRANSPARENT.tag)
 			.add(Blocks.IRON_BARS)
@@ -143,6 +141,7 @@ public class TagGen {
 				"connector_lv", "connector_lv_relay", "connector_mv", "connector_mv_relay",
 				"connector_hv", "connector_hv_relay", "connector_bundled", "connector_structural",
 				"connector_redstone", "connector_probe", "breaker_switch");
+		addOptional(prov.tag(AllBlockTags.NON_MOVABLE.tag), Mods.BC, "bits_block");
 
 		// VALIDATE
 
@@ -255,6 +254,7 @@ public class TagGen {
 
 	private static void genEntityTags(RegistrateTagsProvider<EntityType<?>> provIn) {
 		CreateTagsProvider<EntityType<?>> prov = new CreateTagsProvider<>(provIn, EntityType::builtInRegistryHolder);
+
 		// VALIDATE
 
 		for (AllEntityTags tag : AllEntityTags.values()) {
@@ -297,10 +297,6 @@ public class TagGen {
 			FabricTagProvider<T>.FabricTagBuilder fabricBuilder = provider.addTag(tag);
 			return new CreateTagAppender<>(fabricBuilder, keyExtractor);
 		}
-
-		public TagBuilder getOrCreateRawBuilder(TagKey<T> tag) {
-			return provider.addTag(tag).builder;
-		}
 	}
 
 	public static class CreateTagAppender<T> extends TagsProvider.TagAppender<T> {
@@ -336,4 +332,5 @@ public class TagGen {
 			return this;
 		}
 	}
+
 }

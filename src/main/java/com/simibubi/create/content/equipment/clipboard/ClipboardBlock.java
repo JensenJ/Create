@@ -10,7 +10,6 @@ import com.simibubi.create.foundation.block.IBE;
 import com.simibubi.create.foundation.block.ProperWaterloggedBlock;
 import com.simibubi.create.foundation.gui.ScreenOpener;
 
-import net.fabricmc.fabric.api.entity.FakePlayer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -37,6 +36,7 @@ import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import io.github.fabricators_of_create.porting_lib.fake_players.FakePlayer;
 import io.github.fabricators_of_create.porting_lib.util.EnvExecutor;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -86,7 +86,7 @@ public class ClipboardBlock extends FaceAttachedHorizontalDirectionalBlock
 	@Override
 	public InteractionResult use(BlockState pState, Level pLevel, BlockPos pPos, Player pPlayer, InteractionHand pHand,
 		BlockHitResult pHit) {
-		if (pPlayer.isShiftKeyDown()) {
+		if (pPlayer.isSteppingCarefully()) {
 			breakAndCollect(pState, pLevel, pPos, pPlayer);
 			return InteractionResult.SUCCESS;
 		}

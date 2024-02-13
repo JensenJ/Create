@@ -2,14 +2,21 @@ package com.simibubi.create.foundation.events;
 
 import java.util.concurrent.Executor;
 
+import io.github.fabricators_of_create.porting_lib.entity.events.AdditionalEntityTrackingEvents;
+import io.github.fabricators_of_create.porting_lib.entity.events.EntityDataEvents;
+import io.github.fabricators_of_create.porting_lib.entity.events.EntityEvents;
+import io.github.fabricators_of_create.porting_lib.entity.events.EntityMountEvents;
+import io.github.fabricators_of_create.porting_lib.entity.events.EntityMoveEvents;
+import io.github.fabricators_of_create.porting_lib.entity.events.EntityMoveEvents.ChunkSectionChangeContext;
+import io.github.fabricators_of_create.porting_lib.entity.events.living.LivingEntityDamageEvents;
+import io.github.fabricators_of_create.porting_lib.entity.events.living.LivingEntityEvents;
 
-import io.github.fabricators_of_create.porting_lib.entity.events.LivingEntityEvents;
+import io.github.fabricators_of_create.porting_lib.entity.events.living.LivingEntityLootEvents;
 
 import org.jetbrains.annotations.Nullable;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.simibubi.create.Create;
-import com.simibubi.create.api.event.PipeCollisionEvent;
 import com.simibubi.create.content.contraptions.ContraptionHandler;
 import com.simibubi.create.content.contraptions.actors.trainControls.ControlsServerHandler;
 import com.simibubi.create.content.contraptions.glue.SuperGlueHandler;
@@ -33,8 +40,6 @@ import com.simibubi.create.content.equipment.wrench.WrenchItem;
 import com.simibubi.create.content.equipment.zapper.ZapperInteractionHandler;
 import com.simibubi.create.content.equipment.zapper.ZapperItem;
 import com.simibubi.create.content.fluids.FluidBottleItemHook;
-import com.simibubi.create.content.fluids.FluidReactions;
-import com.simibubi.create.content.kinetics.belt.BeltHelper;
 import com.simibubi.create.content.kinetics.crank.ValveHandleBlock;
 import com.simibubi.create.content.kinetics.crusher.CrushingWheelBlockEntity;
 import com.simibubi.create.content.kinetics.deployer.DeployerFakePlayer;
@@ -52,9 +57,6 @@ import com.simibubi.create.foundation.utility.ServerSpeedProvider;
 import com.simibubi.create.foundation.utility.WorldAttached;
 import com.simibubi.create.infrastructure.command.AllCommands;
 
-import io.github.fabricators_of_create.porting_lib.entity.events.EntityDataEvents;
-import io.github.fabricators_of_create.porting_lib.entity.events.EntityEvents;
-import io.github.fabricators_of_create.porting_lib.entity.events.EntityMountEvents;
 import io.github.fabricators_of_create.porting_lib.event.common.BlockEvents;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerChunkEvents;
@@ -86,6 +88,7 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.vehicle.AbstractMinecart;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
@@ -146,14 +149,13 @@ public class CommonEvents {
 		AllCommands.register(dispatcher);
 	}
 
-	public static void onEntityEnterSection(Entity entity, long packedOldPos, long packedNewPos) {
-		CarriageEntityHandler.onEntityEnterSection(entity, packedOldPos, packedNewPos);
+	public static void onEntityEnterSection(ChunkSectionChangeContext ctx) {
+		CarriageEntityHandler.onEntityEnterSection(ctx.entity(), ctx.oldPackedPos(), ctx.newPackedPos());
 	}
 
 	public static void addReloadListeners() {
 		ResourceManagerHelper.get(PackType.SERVER_DATA).registerReloadListener(RecipeFinder.LISTENER);
 		ResourceManagerHelper.get(PackType.SERVER_DATA).registerReloadListener(PotatoProjectileTypeManager.ReloadListener.INSTANCE);
-		ResourceManagerHelper.get(PackType.SERVER_DATA).registerReloadListener(BeltHelper.LISTENER);
 	}
 
 	public static void onDatapackSync(ServerPlayer player, boolean joined) {
@@ -220,13 +222,11 @@ public class CommonEvents {
 		ServerPlayConnectionEvents.DISCONNECT.register(CommonEvents::playerLoggedOut);
 		AttackEntityCallback.EVENT.register(CommonEvents::onEntityAttackedByPlayer);
 		CommandRegistrationCallback.EVENT.register(CommonEvents::registerCommands);
-		EntityEvents.START_TRACKING_TAIL.register(CommonEvents::startTracking);
-		EntityEvents.ENTERING_SECTION.register(CommonEvents::onEntityEnterSection);
+		AdditionalEntityTrackingEvents.AFTER_START_TRACKING.register(CommonEvents::startTracking);
+		EntityMoveEvents.CHUNK_SECTION_CHANGE.register(CommonEvents::onEntityEnterSection);
 		LivingEntityEvents.TICK.register(CommonEvents::onUpdateLivingEntity);
 		ServerPlayConnectionEvents.JOIN.register(CommonEvents::playerLoggedIn);
 		ServerLifecycleEvents.SYNC_DATA_PACK_CONTENTS.register(CommonEvents::onDatapackSync);
-		PipeCollisionEvent.FLOW.register(FluidReactions::handlePipeFlowCollisionFallback);
-		PipeCollisionEvent.SPILL.register(FluidReactions::handlePipeSpillCollisionFallback);
 		// fabric: some features using events on forge don't use events here.
 		// they've been left in this class for upstream compatibility.
 		CommonEvents.addReloadListeners();
@@ -250,17 +250,17 @@ public class CommonEvents {
 		AttackBlockCallback.EVENT.register(ZapperInteractionHandler::leftClickingBlocksWithTheZapperSelectsTheBlock);
 		UseEntityCallback.EVENT.register(ScheduleItemEntityInteraction::interactWithConductor);
 		ServerTickEvents.END_WORLD_TICK.register(HauntedBellPulser::hauntedBellCreatesPulse);
-		LivingEntityEvents.ATTACK.register(DeployerFakePlayer::entitiesDontRetaliate);
+		LivingEntityEvents.SET_TARGET.register(DeployerFakePlayer::entitiesDontRetaliate);
 		EntityMountEvents.MOUNT.register(CouplingHandler::preventEntitiesFromMoutingOccupiedCart);
-		LivingEntityEvents.EXPERIENCE_DROP.register(DeployerFakePlayer::deployerKillsDoNotSpawnXP);
-		LivingEntityEvents.HURT.register(ExtendoGripItem::bufferLivingAttackEvent);
-		LivingEntityEvents.KNOCKBACK_STRENGTH.register(ExtendoGripItem::attacksByExtendoGripHaveMoreKnockback);
+		LivingEntityLootEvents.EXPERIENCE_DROP.register(DeployerFakePlayer::deployerKillsDoNotSpawnXP);
+		LivingEntityDamageEvents.HURT.register(ExtendoGripItem::bufferLivingAttackEvent);
+		LivingEntityDamageEvents.KNOCKBACK_STRENGTH.register(ExtendoGripItem::attacksByExtendoGripHaveMoreKnockback);
 		LivingEntityEvents.TICK.register(ExtendoGripItem::holdingExtendoGripIncreasesRange);
 		LivingEntityEvents.TICK.register(DivingBootsItem::accellerateDescentUnderwater);
 		LivingEntityEvents.TICK.register(DivingHelmetItem::breatheUnderwater);
-		LivingEntityEvents.DROPS.register(CrushingWheelBlockEntity::handleCrushedMobDrops);
-		LivingEntityEvents.LOOTING_LEVEL.register(CrushingWheelBlockEntity::crushingIsFortunate);
-		LivingEntityEvents.DROPS.register(DeployerFakePlayer::deployerCollectsDropsFromKilledEntities);
+		LivingEntityLootEvents.DROPS.register(CrushingWheelBlockEntity::handleCrushedMobDrops);
+		LivingEntityLootEvents.LOOTING_LEVEL.register(CrushingWheelBlockEntity::crushingIsFortunate);
+		LivingEntityLootEvents.DROPS.register(DeployerFakePlayer::deployerCollectsDropsFromKilledEntities);
 		ServerEntityEvents.EQUIPMENT_CHANGE.register(NetheriteDivingHandler::onLivingEquipmentChange);
 		EntityEvents.SIZE.register(DeployerFakePlayer::deployerHasEyesOnHisFeet);
 		BlockEvents.AFTER_PLACE.register(SymmetryHandler::onBlockPlaced);

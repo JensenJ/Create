@@ -56,7 +56,7 @@ public class ControlsBlock extends HorizontalDirectionalBlock implements IWrench
 		Player player = pContext.getPlayer();
 
 		state = state.setValue(FACING, horizontalDirection.getOpposite());
-		if (player != null && player.isShiftKeyDown())
+		if (player != null && player.isSteppingCarefully())
 			state = state.setValue(FACING, horizontalDirection);
 
 		return state;

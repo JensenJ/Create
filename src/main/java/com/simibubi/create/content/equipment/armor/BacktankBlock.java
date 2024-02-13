@@ -8,7 +8,6 @@ import com.simibubi.create.AllShapes;
 import com.simibubi.create.content.kinetics.base.HorizontalKineticBlock;
 import com.simibubi.create.foundation.block.IBE;
 
-import net.fabricmc.fabric.api.entity.FakePlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Direction.Axis;
@@ -124,7 +123,7 @@ public class BacktankBlock extends HorizontalKineticBlock
 		BlockHitResult hit) {
 		if (player == null)
 			return InteractionResult.PASS;
-		if (player instanceof FakePlayer)
+		if (player.isFake())
 			return InteractionResult.PASS;
 		if (player.isShiftKeyDown())
 			return InteractionResult.PASS;

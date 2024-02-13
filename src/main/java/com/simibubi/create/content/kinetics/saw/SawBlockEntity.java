@@ -82,7 +82,7 @@ public class SawBlockEntity extends BlockBreakingKineticBlockEntity implements S
 
 	private static final Object cuttingRecipesKey = new Object();
 	public static final Supplier<RecipeType<?>> woodcuttingRecipeType =
-			Suppliers.memoize(() -> BuiltInRegistries.RECIPE_TYPE.get(new ResourceLocation("druidcraft", "woodcutting")));
+		Suppliers.memoize(() -> BuiltInRegistries.RECIPE_TYPE.get(new ResourceLocation("druidcraft", "woodcutting")));
 
 	public ProcessingInventory inventory;
 	private int recipeIndex;
@@ -205,7 +205,7 @@ public class SawBlockEntity extends BlockBreakingKineticBlockEntity implements S
 			if (stack.isEmpty())
 				continue;
 			ItemStack tryExportingToBeltFunnel = getBehaviour(DirectBeltInputBehaviour.TYPE)
-					.tryExportingToBeltFunnel(stack, itemMovementFacing.getOpposite(), false);
+				.tryExportingToBeltFunnel(stack, itemMovementFacing.getOpposite(), false);
 			if (tryExportingToBeltFunnel != null) {
 				if (tryExportingToBeltFunnel.getCount() != stack.getCount()) {
 					inventory.setStackInSlot(slot, tryExportingToBeltFunnel);
@@ -244,10 +244,10 @@ public class SawBlockEntity extends BlockBreakingKineticBlockEntity implements S
 
 		// Eject Items
 		Vec3 outPos = VecHelper.getCenterOf(worldPosition)
-				.add(itemMovement.scale(.5f)
-						.add(0, .5, 0));
+			.add(itemMovement.scale(.5f)
+				.add(0, .5, 0));
 		Vec3 outMotion = itemMovement.scale(.0625)
-				.add(0, .125, 0);
+			.add(0, .125, 0);
 		for (int slot = 0; slot < inventory.getSlotCount(); slot++) {
 			ItemStack stack = inventory.getStackInSlot(slot);
 			if (stack.isEmpty())
@@ -286,13 +286,13 @@ public class SawBlockEntity extends BlockBreakingKineticBlockEntity implements S
 		ParticleOptions particleData = null;
 		if (stack.getItem() instanceof BlockItem)
 			particleData = new BlockParticleOption(ParticleTypes.BLOCK, ((BlockItem) stack.getItem()).getBlock()
-					.defaultBlockState());
+				.defaultBlockState());
 		else
 			particleData = new ItemParticleOption(ParticleTypes.ITEM, stack);
 
 		RandomSource r = level.random;
 		Vec3 v = VecHelper.getCenterOf(this.worldPosition)
-				.add(0, 5 / 16f, 0);
+			.add(0, 5 / 16f, 0);
 		for (int i = 0; i < 10; i++) {
 			Vec3 m = VecHelper.offsetRandomly(new Vec3(0, 0.25f, 0), r, .125f);
 			level.addParticle(particleData, v.x, v.y, v.z, m.x, m.y, m.y);
@@ -307,7 +307,7 @@ public class SawBlockEntity extends BlockBreakingKineticBlockEntity implements S
 		float speed = 1;
 		if (stack.getItem() instanceof BlockItem)
 			particleData = new BlockParticleOption(ParticleTypes.BLOCK, ((BlockItem) stack.getItem()).getBlock()
-					.defaultBlockState());
+				.defaultBlockState());
 		else {
 			particleData = new ItemParticleOption(ParticleTypes.ITEM, stack);
 			speed = .125f;
@@ -321,7 +321,7 @@ public class SawBlockEntity extends BlockBreakingKineticBlockEntity implements S
 		if (inventory.appliedRecipe)
 			offset -= .5f;
 		level.addParticle(particleData, pos.x() + -vec.x * offset, pos.y() + .45f, pos.z() + -vec.z * offset,
-				-vec.x * speed, r.nextFloat() * speed, -vec.z * speed);
+			-vec.x * speed, r.nextFloat() * speed, -vec.z * speed);
 	}
 
 	public Vec3 getItemMovementVec() {
@@ -340,7 +340,7 @@ public class SawBlockEntity extends BlockBreakingKineticBlockEntity implements S
 		Recipe<?> recipe = recipes.get(recipeIndex);
 
 		int rolls = inventory.getStackInSlot(0)
-				.getCount();
+			.getCount();
 		inventory.clear();
 
 		List<ItemStack> list = new ArrayList<>();
@@ -350,7 +350,7 @@ public class SawBlockEntity extends BlockBreakingKineticBlockEntity implements S
 				results = ((CuttingRecipe) recipe).rollResults();
 			else if (recipe instanceof StonecutterRecipe || recipe.getType() == woodcuttingRecipeType.get())
 				results.add(recipe.getResultItem(level.registryAccess())
-						.copy());
+					.copy());
 
 			for (int i = 0; i < results.size(); i++) {
 				ItemStack stack = results.get(i);
@@ -460,8 +460,8 @@ public class SawBlockEntity extends BlockBreakingKineticBlockEntity implements S
 	@Override
 	protected boolean shouldRun() {
 		return getBlockState().getValue(SawBlock.FACING)
-				.getAxis()
-				.isHorizontal();
+			.getAxis()
+			.isHorizontal();
 	}
 
 	@Override
@@ -472,16 +472,16 @@ public class SawBlockEntity extends BlockBreakingKineticBlockEntity implements S
 	@Override
 	public void onBlockBroken(BlockState stateToBreak) {
 		Optional<AbstractBlockBreakQueue> dynamicTree =
-				TreeCutter.findDynamicTree(stateToBreak.getBlock(), breakingPos);
+			TreeCutter.findDynamicTree(stateToBreak.getBlock(), breakingPos);
 		if (dynamicTree.isPresent()) {
 			dynamicTree.get()
-					.destroyBlocks(level, null, this::dropItemFromCutTree);
+				.destroyBlocks(level, null, this::dropItemFromCutTree);
 			return;
 		}
 
 		super.onBlockBroken(stateToBreak);
 		TreeCutter.findTree(level, breakingPos)
-				.destroyBlocks(level, null, this::dropItemFromCutTree);
+			.destroyBlocks(level, null, this::dropItemFromCutTree);
 	}
 
 	public void dropItemFromCutTree(BlockPos pos, ItemStack stack) {
@@ -489,7 +489,7 @@ public class SawBlockEntity extends BlockBreakingKineticBlockEntity implements S
 		Vec3 dropPos = VecHelper.getCenterOf(pos);
 		ItemEntity entity = new ItemEntity(level, dropPos.x, dropPos.y, dropPos.z, stack);
 		entity.setDeltaMovement(Vec3.atLowerCornerOf(breakingPos.subtract(this.worldPosition))
-				.scale(distance / 20f));
+			.scale(distance / 20f));
 		level.addFreshEntity(entity);
 	}
 

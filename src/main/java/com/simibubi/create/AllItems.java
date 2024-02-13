@@ -77,9 +77,7 @@ import net.minecraft.world.item.Rarity;
 
 public class AllItems {
 
-	static {
-		REGISTRATE.setCreativeTab(AllCreativeModeTabs.BASE_CREATIVE_TAB.key());
-	}
+	static { REGISTRATE.useCreativeTab(AllCreativeModeTabs.MAIN_TAB.key()); }
 
 	public static final ItemEntry<Item> WHEAT_FLOUR =
 		taggedIngredient("wheat_flour", forgeItemTag("wheat_flour"), forgeItemTag("flour")),

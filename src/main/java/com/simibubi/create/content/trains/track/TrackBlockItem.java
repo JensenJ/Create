@@ -77,7 +77,7 @@ public class TrackBlockItem extends BlockItem {
 			}
 			return super.useOn(pContext);
 
-		} else if (player.isShiftKeyDown()) {
+		} else if (player.isSteppingCarefully()) {
 			if (!level.isClientSide) {
 				player.displayClientMessage(Lang.translateDirect("track.selection_cleared"), true);
 				stack.setTag(null);

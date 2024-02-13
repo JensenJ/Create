@@ -15,7 +15,7 @@ import com.simibubi.create.foundation.blockEntity.behaviour.inventory.VersionedI
 import com.simibubi.create.foundation.utility.BlockFace;
 
 import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
-import io.github.fabricators_of_create.porting_lib.fluids.FluidStack;
+import io.github.fabricators_of_create.porting_lib.util.FluidStack;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
@@ -112,16 +112,15 @@ public class ThresholdSwitchBlockEntity extends SmartBlockEntity {
 //			currentLevel = StorageDrawers.getTrueFillLevel(observedInventory.getInventory(), filtering);
 		} else if (observedInventory.hasInventory() || observedTank.hasInventory()) {
 			if (observedInventory.hasInventory()) {
-
 				// Item inventory
-				try (Transaction t = TransferUtil.getTransaction()) {
-					Storage<ItemVariant> inv = observedInventory.getInventory();
-					if (invVersionTracker.stillWaiting(inv)) {
-						occupied = prevLevel;
-						totalSpace = 1f;
 
-					} else {
-						invVersionTracker.awaitNewVersion(inv);
+				Storage<ItemVariant> inv = observedInventory.getInventory();
+				if(invVersionTracker.stillWaiting(inv)) {
+					occupied = prevLevel;
+					totalSpace = 1f;
+				}else{
+					invVersionTracker.awaitNewVersion(inv);
+					try (Transaction t = TransferUtil.getTransaction()) {
 						for (StorageView<ItemVariant> view : inv) {
 							long space = view.getCapacity();
 							long count = view.getAmount();
@@ -217,10 +216,10 @@ public class ThresholdSwitchBlockEntity extends SmartBlockEntity {
 	@Override
 	public void addBehaviours(List<BlockEntityBehaviour> behaviours) {
 		behaviours.add(filtering = new FilteringBehaviour(this, new FilteredDetectorFilterSlot(true))
-			.withCallback($ -> {
-				this.updateCurrentLevel();
-				invVersionTracker.reset();
-			}));
+				.withCallback($ -> {
+					this.updateCurrentLevel();
+					invVersionTracker.reset();
+				}));
 
 		behaviours.add(invVersionTracker = new VersionedInventoryTrackerBehaviour(this));
 

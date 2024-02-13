@@ -58,8 +58,8 @@ public class PortableItemInterfaceBlockEntity extends PortableStorageInterfaceBl
 
 	class InterfaceItemHandler extends ItemHandlerWrapper {
 
-		public InterfaceItemHandler(Storage<ItemVariant> wrapped) {
-			super(wrapped);
+		public InterfaceItemHandler(Storage<ItemVariant> inventory) {
+			super(inventory);
 		}
 
 		@Override
@@ -98,8 +98,8 @@ public class PortableItemInterfaceBlockEntity extends PortableStorageInterfaceBl
 			return new ListeningStorageView<>(view, PortableItemInterfaceBlockEntity.this::onContentTransferred);
 		}
 
-		private void setWrapped(Storage<ItemVariant> wrapped) {
-			this.wrapped = wrapped;
+		private void setWrapped(Storage<ItemVariant> inventory) {
+			this.wrapped = inventory;
 		}
 	}
 }

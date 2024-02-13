@@ -123,7 +123,7 @@ public class SuperGlueSelectionHandler {
 			return;
 		}
 
-		boolean cancel = player.isShiftKeyDown();
+		boolean cancel = player.isSteppingCarefully();
 		if (cancel && firstPos == null)
 			return;
 
@@ -191,7 +191,7 @@ public class SuperGlueSelectionHandler {
 
 		if (!isGlue(player.getMainHandItem()))
 			return false;
-		if (!player.mayBuild())
+		if (AdventureUtil.isAdventure(player))
 			return false;
 
 		if (attack) {
@@ -203,7 +203,7 @@ public class SuperGlueSelectionHandler {
 			return true;
 		}
 
-		if (player.isShiftKeyDown()) {
+		if (player.isSteppingCarefully()) {
 			if (firstPos != null) {
 				discard();
 				return true;

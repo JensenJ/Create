@@ -14,7 +14,6 @@ import io.github.fabricators_of_create.porting_lib.mixin.accessors.common.access
 import io.github.fabricators_of_create.porting_lib.tool.ToolAction;
 import io.github.fabricators_of_create.porting_lib.tool.ToolActions;
 import io.github.fabricators_of_create.porting_lib.util.NBTSerializer;
-import net.fabricmc.fabric.api.entity.FakePlayer;
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ItemParticleOption;
@@ -137,7 +136,7 @@ public class SandPaperItem extends Item implements CustomUseEffectsItem {
 			}
 
 			if (!polished.isEmpty()) {
-				if (player instanceof FakePlayer) {
+				if (player.isFake()) {
 					player.drop(polished, false, false);
 				} else {
 					player.getInventory()
@@ -208,10 +207,10 @@ public class SandPaperItem extends Item implements CustomUseEffectsItem {
 		return InteractionResult.PASS;
 	}
 
-//	@Override
-//	public boolean canPerformAction(ItemStack stack, ToolAction toolAction) {
-//		return toolAction == ToolActions.AXE_SCRAPE || toolAction == ToolActions.AXE_WAX_OFF;
-//	}
+	@Override
+	public boolean canPerformAction(ItemStack stack, ToolAction toolAction) {
+		return toolAction == ToolActions.AXE_SCRAPE || toolAction == ToolActions.AXE_WAX_OFF;
+	}
 
 	@Override
 	public Boolean shouldTriggerUseEffects(ItemStack stack, LivingEntity entity) {

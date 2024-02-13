@@ -188,19 +188,20 @@ public class GlobalRailwayManager {
 		if (level.dimension() != Level.OVERWORLD)
 			return;
 
-		signalEdgeGroups.forEach((id, group) -> {
+		for (SignalEdgeGroup group : signalEdgeGroups.values()) {
 			group.trains.clear();
 			group.reserved = null;
-		});
+		}
 
-		trackNetworks.forEach((id, graph) -> {
+		for (TrackGraph graph : trackNetworks.values()) {
 			graph.tickPoints(true);
 			graph.resolveIntersectingEdgeGroups(level);
-		});
+		}
 
 		tickTrains(level);
 
-		trackNetworks.forEach((id, graph) -> graph.tickPoints(false));
+		for (TrackGraph graph : trackNetworks.values())
+			graph.tickPoints(false);
 
 		GlobalTrainDisplayData.updateTick = level.getGameTime() % 100 == 0;
 		if (GlobalTrainDisplayData.updateTick)

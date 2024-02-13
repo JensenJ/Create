@@ -22,16 +22,16 @@ import net.minecraft.world.level.block.state.BlockState;
 public class BeltFunnelInteractionHandler {
 
 	public static boolean checkForFunnels(BeltInventory beltInventory, TransportedItemStack currentItem,
-										  float nextOffset) {
+		float nextOffset) {
 		boolean beltMovementPositive = beltInventory.beltMovementPositive;
 		int firstUpcomingSegment = (int) Math.floor(currentItem.beltPosition);
 		int step = beltMovementPositive ? 1 : -1;
 		firstUpcomingSegment = Mth.clamp(firstUpcomingSegment, 0, beltInventory.belt.beltLength - 1);
 
 		for (int segment = firstUpcomingSegment; beltMovementPositive ? segment <= nextOffset
-				: segment + 1 >= nextOffset; segment += step) {
+			: segment + 1 >= nextOffset; segment += step) {
 			BlockPos funnelPos = BeltHelper.getPositionForOffset(beltInventory.belt, segment)
-					.above();
+				.above();
 			Level world = beltInventory.belt.getLevel();
 			BlockState funnelState = world.getBlockState(funnelPos);
 			if (!(funnelState.getBlock() instanceof BeltFunnelBlock))
@@ -49,7 +49,7 @@ public class BeltFunnelInteractionHandler {
 				funnelEntry += .499f * (beltMovementPositive ? -1 : 1);
 
 			boolean hasCrossed = nextOffset > funnelEntry && beltMovementPositive
-					|| nextOffset < funnelEntry && !beltMovementPositive;
+				|| nextOffset < funnelEntry && !beltMovementPositive;
 			if (!hasCrossed)
 				return false;
 			if (blocking)

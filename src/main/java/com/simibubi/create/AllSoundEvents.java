@@ -6,7 +6,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
-import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 
 import com.google.gson.JsonArray;
@@ -320,10 +319,12 @@ public class AllSoundEvents {
 			entry.register();
 	}
 
-	public static void provideLang(BiConsumer<String, String> consumer) {
+	public static JsonObject provideLangEntries() {
+		JsonObject object = new JsonObject();
 		for (SoundEntry entry : ALL.values())
 			if (entry.hasSubtitle())
-				consumer.accept(entry.getSubtitleKey(), entry.getSubtitle());
+				object.addProperty(entry.getSubtitleKey(), entry.getSubtitle());
+		return object;
 	}
 
 	public static DataProvider provider(FabricDataOutput output) {

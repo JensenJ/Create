@@ -6,16 +6,12 @@ import java.util.Optional;
 
 import javax.annotation.Nullable;
 
-import io.github.fabricators_of_create.porting_lib.entity.IEntityAdditionalSpawnData;
-
-import net.fabricmc.fabric.api.entity.FakePlayer;
-
 import org.apache.commons.lang3.Validate;
 
 import com.simibubi.create.AllEntityTypes;
 import com.simibubi.create.AllItems;
 import com.simibubi.create.Create;
-import com.simibubi.create.content.logistics.filter.FilterItemStack;
+import com.simibubi.create.content.logistics.filter.FilterItem;
 import com.simibubi.create.content.schematics.requirement.ISpecialEntityItemRequirement;
 import com.simibubi.create.content.schematics.requirement.ItemRequirement;
 import com.simibubi.create.content.schematics.requirement.ItemRequirement.ItemUseType;
@@ -25,6 +21,7 @@ import com.simibubi.create.foundation.utility.IInteractionChecker;
 import com.simibubi.create.foundation.utility.VecHelper;
 import com.simibubi.create.foundation.utility.fabric.ReachUtil;
 
+import io.github.fabricators_of_create.porting_lib.entity.ExtraSpawnDataEntity;
 import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
 import io.github.fabricators_of_create.porting_lib.transfer.item.ItemStackHandler;
 import io.github.fabricators_of_create.porting_lib.util.NetworkHooks;
@@ -76,7 +73,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
 public class BlueprintEntity extends HangingEntity
-	implements IEntityAdditionalSpawnData, ISpecialEntityItemRequirement, ISyncPersistentData, IInteractionChecker {
+	implements ExtraSpawnDataEntity, ISpecialEntityItemRequirement, ISyncPersistentData, IInteractionChecker {
 
 	protected int size;
 	protected Direction verticalOrientation;
@@ -343,7 +340,7 @@ public class BlueprintEntity extends HangingEntity
 
 	@Override
 	public InteractionResult interactAt(Player player, Vec3 vec, InteractionHand hand) {
-		if (player instanceof FakePlayer)
+		if (player.isFake())
 			return InteractionResult.PASS;
 
 		boolean holdingWrench = AllItems.WRENCH.isIn(player.getItemInHand(hand));
@@ -365,15 +362,16 @@ public class BlueprintEntity extends HangingEntity
 					Map<Integer, ItemStack> craftingGrid = new HashMap<>();
 					boolean success = true;
 
-					Search: for (int i = 0; i < 9; i++) {
-						FilterItemStack requestedItem = FilterItemStack.of(items.getStackInSlot(i));
+					Search:
+					for (int i = 0; i < 9; i++) {
+						ItemStack requestedItem = items.getStackInSlot(i);
 						if (requestedItem.isEmpty()) {
 							craftingGrid.put(i, ItemStack.EMPTY);
 							continue;
 						}
 
 						ResourceAmount<ItemVariant> resource = StorageUtil.findExtractableContent(
-								playerInv, v -> requestedItem.test(level(), v.toStack()), t);
+								playerInv, v -> FilterItem.test(level(), v.toStack(), requestedItem), t);
 						if (resource != null) {
 							playerInv.extract(resource.resource(), 1, t);
 							craftingGrid.put(i, resource.resource().toStack());

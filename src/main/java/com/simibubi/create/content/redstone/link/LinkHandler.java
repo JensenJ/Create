@@ -7,7 +7,6 @@ import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour
 import com.simibubi.create.foundation.utility.AdventureUtil;
 import com.simibubi.create.foundation.utility.RaycastHelper;
 
-import net.fabricmc.fabric.api.entity.FakePlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -42,7 +41,7 @@ public class LinkHandler {
 		if (AllItems.WRENCH.isIn(heldItem))
 			return InteractionResult.PASS;
 
-		boolean fakePlayer = player instanceof FakePlayer;
+		boolean fakePlayer = player.isFake();
 		boolean fakePlayerChoice = false;
 
 		if (fakePlayer) {

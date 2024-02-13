@@ -3,12 +3,10 @@ package com.simibubi.create.content.processing.burner;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 
 import com.simibubi.create.AllBlocks;
-import com.simibubi.create.AllTags.AllEntityTags;
 import com.simibubi.create.foundation.utility.RegisteredObjects;
 import com.simibubi.create.foundation.utility.VecHelper;
 
@@ -17,6 +15,7 @@ import io.github.fabricators_of_create.porting_lib.mixin.accessors.common.access
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.random.WeightedEntry.Wrapper;
@@ -24,6 +23,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.monster.Blaze;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
@@ -93,9 +93,11 @@ public class BlazeBurnerBlockItem extends BlockItem {
 			possibleSpawns.add(((BaseSpawnerAccessor) spawner).port_lib$getNextSpawnData());
 		}
 
+		ResourceLocation blazeId = RegisteredObjects.getKeyOrThrow(EntityType.BLAZE);
 		for (SpawnData e : possibleSpawns) {
-			Optional<EntityType<?>> optionalEntity = EntityType.by(e.entityToSpawn());
-			if (optionalEntity.isEmpty() || !AllEntityTags.BLAZE_BURNER_CAPTURABLE.matches(optionalEntity.get()))
+			ResourceLocation spawnerEntityId = new ResourceLocation(e.entityToSpawn()
+				.getString("id"));
+			if (!spawnerEntityId.equals(blazeId))
 				continue;
 
 			spawnCaptureEffects(world, VecHelper.getCenterOf(pos));
@@ -114,7 +116,7 @@ public class BlazeBurnerBlockItem extends BlockItem {
 		InteractionHand hand) {
 		if (hasCapturedBlaze())
 			return InteractionResult.PASS;
-		if (!AllEntityTags.BLAZE_BURNER_CAPTURABLE.matches(entity))
+		if (!(entity instanceof Blaze))
 			return InteractionResult.PASS;
 
 		Level world = player.level();

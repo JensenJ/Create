@@ -31,7 +31,6 @@ import com.simibubi.create.foundation.fluid.CombinedTankWrapper;
 import com.simibubi.create.foundation.item.ItemHelper;
 import com.simibubi.create.foundation.item.SmartInventory;
 import com.simibubi.create.foundation.utility.AnimationTickHolder;
-import com.simibubi.create.foundation.utility.BlockHelper;
 import com.simibubi.create.foundation.utility.Components;
 import com.simibubi.create.foundation.utility.Couple;
 import com.simibubi.create.foundation.utility.Iterate;
@@ -45,7 +44,7 @@ import com.simibubi.create.foundation.utility.animation.LerpedFloat.Chaser;
 import com.simibubi.create.infrastructure.config.AllConfigs;
 
 import io.github.fabricators_of_create.porting_lib.transfer.TransferUtil;
-import io.github.fabricators_of_create.porting_lib.fluids.FluidStack;
+import io.github.fabricators_of_create.porting_lib.util.FluidStack;
 import io.github.fabricators_of_create.porting_lib.util.FluidTextUtil;
 import io.github.fabricators_of_create.porting_lib.util.FluidUnit;
 import io.github.fabricators_of_create.porting_lib.util.NBTSerializer;
@@ -650,7 +649,7 @@ public class BasinBlockEntity extends SmartBlockEntity implements IHaveGoggleInf
 	public static HeatLevel getHeatLevelOf(BlockState state) {
 		if (state.hasProperty(BlazeBurnerBlock.HEAT_LEVEL))
 			return state.getValue(BlazeBurnerBlock.HEAT_LEVEL);
-		return AllTags.AllBlockTags.PASSIVE_BOILER_HEATERS.matches(state) && BlockHelper.isNotUnheated(state) ? HeatLevel.SMOULDERING : HeatLevel.NONE;
+		return AllTags.AllBlockTags.PASSIVE_BOILER_HEATERS.matches(state) ? HeatLevel.SMOULDERING : HeatLevel.NONE;
 	}
 
 	public Couple<SmartFluidTankBehaviour> getTanks() {

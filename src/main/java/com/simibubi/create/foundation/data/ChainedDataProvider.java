@@ -5,7 +5,6 @@ import java.util.concurrent.CompletableFuture;
 import net.minecraft.data.CachedOutput;
 import net.minecraft.data.DataProvider;
 
-@Deprecated(forRemoval = true)
 public class ChainedDataProvider implements DataProvider {
 
 	private DataProvider mainProvider;

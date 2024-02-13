@@ -32,9 +32,7 @@ import net.minecraft.world.level.material.MapColor;
 
 public class AllPaletteBlocks {
 
-	static {
-		REGISTRATE.setCreativeTab(AllCreativeModeTabs.PALETTES_CREATIVE_TAB.key());
-	}
+	static { REGISTRATE.useCreativeTab(AllCreativeModeTabs.BUILDING_BLOCKS_TAB.key()); }
 
 	// Windows and Glass
 
