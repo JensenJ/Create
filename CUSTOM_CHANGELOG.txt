@@ -7,3 +7,4 @@ Caching has been implemented on the mechanical saw recipe lookup to prevent lag
 The range check has been removed on tbe schematicannon, prevents lag from infinitely reloading schematics
 Fixed schematics having duplicate key for max schematic size
 Filters respect NBT data correctly
+Fixed mechanical crafters not allowing items to be placed into them after removing a different item from it before crafting
