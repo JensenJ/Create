@@ -7,6 +7,7 @@ import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
 import net.fabricmc.fabric.api.transfer.v1.storage.StorageView;
 import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class VersionedInventoryWrapper implements Storage<ItemVariant> {
@@ -32,6 +33,11 @@ public class VersionedInventoryWrapper implements Storage<ItemVariant> {
 	}
 
 	@Override
+	public long getVersion() {
+		return inventory.getVersion();
+	}
+
+	@Override
 	public long insert(ItemVariant resource, long maxAmount, TransactionContext transaction) {
 		long inserted = inventory.insert(resource, maxAmount, transaction);
 		if(inserted != 0){
@@ -47,6 +53,12 @@ public class VersionedInventoryWrapper implements Storage<ItemVariant> {
 			incrementVersion();
 		}
 		return extracted;
+	}
+
+	@Override
+	@NotNull
+	public Iterator<StorageView<ItemVariant>> iterator() {
+		return inventory.iterator();
 	}
 
 	@Override
@@ -70,18 +82,8 @@ public class VersionedInventoryWrapper implements Storage<ItemVariant> {
 	}
 
 	@Override
-	public Iterator<StorageView<ItemVariant>> iterator() {
-		return inventory.iterator();
-	}
-
-	@Override
-	public @Nullable StorageView<ItemVariant> exactView(ItemVariant resource) {
+	@Nullable
+	public StorageView<ItemVariant> exactView(ItemVariant resource) {
 		return inventory.exactView(resource);
 	}
-
-	@Override
-	public long getVersion(){
-		return version;
-	}
-
 }

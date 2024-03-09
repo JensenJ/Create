@@ -341,7 +341,7 @@ public class ChuteBlockEntity extends SmartBlockEntity implements IHaveGoggleInf
 		handleInput(storage, 0);
 	}
 
-	private void handleInput(Storage<ItemVariant> inv, float startLocation) {
+	private void handleInput(@Nullable Storage<ItemVariant> inv, float startLocation) {
 		if (inv == null)
 			return;
 		if (invVersionTracker.stillWaiting(inv))
@@ -370,19 +370,17 @@ public class ChuteBlockEntity extends SmartBlockEntity implements IHaveGoggleInf
 
 		if (level == null || direction == null || !this.canOutputItems())
 			return false;
-		Storage<ItemVariant> below = grabCapability(Direction.DOWN);
-		if (below != null) {
+		Storage<ItemVariant> inv = grabCapability(Direction.DOWN);
+		if (inv != null) {
 			if (level.isClientSide && !isVirtual())
 				return false;
-			if(invVersionTracker.stillWaiting(below)) {
+
+			if (invVersionTracker.stillWaiting(inv))
 				return false;
-			}
+
 			try (Transaction t = TransferUtil.getTransaction()) {
-				long inserted = below.insert(ItemVariant.of(item), item.getCount(), t);
-				if (inserted != 0 && !simulate) {
-					invVersionTracker.incrementVersion(below);
-					t.commit();
-				}
+				long inserted = inv.insert(ItemVariant.of(item), item.getCount(), t);
+				if (inserted != 0 && !simulate) t.commit();
 				ItemStack held = getItem();
 				if (!simulate) {
 					ItemStack newStack = held.copy();
@@ -392,7 +390,10 @@ public class ChuteBlockEntity extends SmartBlockEntity implements IHaveGoggleInf
 				if (inserted != 0)
 					return true;
 			}
-			invVersionTracker.awaitNewVersion(below);
+
+			// awaitNewVersion and getVersion cannot be called during a transaction and will throw an IllegalStateException,
+			// so we call this outside of the transaction
+			invVersionTracker.awaitNewVersion(inv);
 			if (direction == Direction.DOWN)
 				return false;
 		}
@@ -434,34 +435,31 @@ public class ChuteBlockEntity extends SmartBlockEntity implements IHaveGoggleInf
 			return false;
 
 		BlockState stateAbove = level.getBlockState(worldPosition.above());
-		Storage<ItemVariant> above = grabCapability(Direction.UP);
 		if (AbstractChuteBlock.isOpenChute(getBlockState())) {
-			if (above != null) {
+			Storage<ItemVariant> inv = grabCapability(Direction.UP);
+			if (inv != null) {
 				if (level.isClientSide && !isVirtual() && !ChuteBlock.isChute(stateAbove))
 					return false;
-				if(invVersionTracker.stillWaiting(above)) {
+
+				if (invVersionTracker.stillWaiting(inv))
 					return false;
-				}
+
 				try (Transaction t = TransferUtil.getTransaction()) {
-					long inserted = above.insert(ItemVariant.of(item), item.getCount(), t);
-
-					if (inserted != 0 && !simulate) {
-						invVersionTracker.incrementVersion(above);
-						t.commit();
-					}
-
+					long inserted = inv.insert(ItemVariant.of(item), item.getCount(), t);
 					if (!simulate) {
 						item = item.copy();
 						item.shrink(ItemHelper.truncateLong(inserted));
 						itemHandler.update();
 						sendData();
 					}
-
 					if (inserted != 0)
 						return true;
-					invVersionTracker.awaitNewVersion(above);
-					return false;
 				}
+
+				// awaitNewVersion and getVersion cannot be called during a transaction and will throw an IllegalStateException,
+				// so we call this outside of the transaction
+				invVersionTracker.awaitNewVersion(inv);
+				return false;
 			}
 		}
 
@@ -525,6 +523,7 @@ public class ChuteBlockEntity extends SmartBlockEntity implements IHaveGoggleInf
 		return true;
 	}
 
+	@Nullable
 	private Storage<ItemVariant> grabCapability(Direction side) {
 		if (level == null)
 			return null;
@@ -544,8 +543,8 @@ public class ChuteBlockEntity extends SmartBlockEntity implements IHaveGoggleInf
 	public void setItem(ItemStack stack, float insertionPos) {
 		item = stack;
 		itemPosition.startWithValue(insertionPos);
-		invVersionTracker.reset();
 		itemHandler.update();
+		invVersionTracker.reset();
 		if (!level.isClientSide) {
 			notifyUpdate();
 			award(AllAdvancements.CHUTE);

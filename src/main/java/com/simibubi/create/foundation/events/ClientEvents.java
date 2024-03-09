@@ -13,6 +13,7 @@ import com.simibubi.create.AllPackets;
 import com.simibubi.create.AllParticleTypes;
 import com.simibubi.create.Create;
 import com.simibubi.create.CreateClient;
+import com.simibubi.create.compat.Mods;
 import com.simibubi.create.content.contraptions.ContraptionHandler;
 import com.simibubi.create.content.contraptions.ContraptionHandlerClient;
 import com.simibubi.create.content.contraptions.actors.trainControls.ControlsHandler;

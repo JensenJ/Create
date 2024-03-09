@@ -1049,6 +1049,7 @@ public class AllBlocks {
 		REGISTRATE.block("piston_extension_pole", PistonExtensionPoleBlock::new)
 			.initialProperties(() -> Blocks.PISTON_HEAD)
 			.properties(p -> p.sound(SoundType.SCAFFOLDING).mapColor(MapColor.DIRT).forceSolidOn())
+			.properties(p -> p.pushReaction(PushReaction.NORMAL)) // fabric: inherits BLOCK from piston head, handled by a method override on forge
 			.transform(axeOrPickaxe())
 			.blockstate(BlockStateGen.directionalBlockProviderIgnoresWaterlogged(false))
 			.simpleItem()
@@ -1631,7 +1632,8 @@ public class AllBlocks {
 
 	public static final BlockEntry<ItemVaultBlock> ITEM_VAULT = REGISTRATE.block("item_vault", ItemVaultBlock::new)
 		.initialProperties(SharedProperties::softMetal)
-		.properties(p -> p.mapColor(MapColor.TERRACOTTA_BLUE).sound(SoundType.NETHERITE_BLOCK)
+		.properties(p -> p.mapColor(MapColor.TERRACOTTA_BLUE)
+			.sound(SoundType.NETHERITE_BLOCK)
 			.explosionResistance(1200))
 		.transform(pickaxeOnly())
 		.blockstate((c, p) -> p.getVariantBuilder(c.get())
@@ -2025,6 +2027,7 @@ public class AllBlocks {
 		.initialProperties(SharedProperties::softMetal)
 		.properties(p -> p.mapColor(MapColor.COLOR_GRAY).sound(SoundType.NETHERITE_BLOCK))
 		.transform(pickaxeOnly())
+		.blockstate(GirderBlockStateGenerator::blockState)
 		.onRegister(CreateRegistrate.blockModel(() -> ConnectedGirderModel::new))
 		.item()
 		.transform(customItemModel())

@@ -8,6 +8,7 @@ import javax.annotation.Nullable;
 
 import io.github.fabricators_of_create.porting_lib.entity.IEntityAdditionalSpawnData;
 
+import io.github.fabricators_of_create.porting_lib.entity.PortingLibEntity;
 import net.fabricmc.fabric.api.entity.FakePlayer;
 
 import org.apache.commons.lang3.Validate;
@@ -15,6 +16,7 @@ import org.apache.commons.lang3.Validate;
 import com.simibubi.create.AllEntityTypes;
 import com.simibubi.create.AllItems;
 import com.simibubi.create.Create;
+import com.simibubi.create.content.logistics.filter.FilterItemStack;
 import com.simibubi.create.content.logistics.filter.FilterItemStack;
 import com.simibubi.create.content.schematics.requirement.ISpecialEntityItemRequirement;
 import com.simibubi.create.content.schematics.requirement.ItemRequirement;
@@ -102,6 +104,11 @@ public class BlueprintEntity extends HangingEntity
 //		@SuppressWarnings("unchecked")
 //		EntityType.Builder<BlueprintEntity> entityBuilder = (EntityType.Builder<BlueprintEntity>) builder;
 		return builder;
+	}
+
+	@Override
+	public Packet<ClientGamePacketListener> getAddEntityPacket() {
+		return PortingLibEntity.getEntitySpawningPacket(this);
 	}
 
 	@Override
