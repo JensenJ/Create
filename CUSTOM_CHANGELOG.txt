@@ -4,3 +4,4 @@ Removed schematicannon max range check
 Smart chutes no longer scan inventories if they are powered
 Optimised item vault input with funnels/chutes (versioned inventory tracking)
 Mechanical saw makes use of recipe caching
+Reverted switching to porting lib config api
