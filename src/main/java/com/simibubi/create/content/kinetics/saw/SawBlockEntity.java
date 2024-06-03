@@ -89,6 +89,9 @@ public class SawBlockEntity extends BlockBreakingKineticBlockEntity implements S
 	private FilteringBehaviour filtering;
 
 	private ItemStack playEvent;
+	private List<? extends Recipe<?>> previousRecipeList;
+	private Item previousRecipeItem;
+	private ItemStack previousFilter;
 
 	public SawBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
 		super(type, pos, state);
@@ -362,22 +365,32 @@ public class SawBlockEntity extends BlockBreakingKineticBlockEntity implements S
 	}
 
 	private List<? extends Recipe<?>> getRecipes() {
+		if(previousRecipeItem == inventory.getStackInSlot(0).getItem() && previousFilter == filtering.getFilter())
+			return previousRecipeList;
+		previousRecipeItem = inventory.getStackInSlot(0).getItem();
+		previousFilter = filtering.getFilter();
+
 		Optional<CuttingRecipe> assemblyRecipe = SequencedAssemblyRecipe.getRecipe(level, inventory.getStackInSlot(0),
 			AllRecipeTypes.CUTTING.getType(), CuttingRecipe.class);
 		if (assemblyRecipe.isPresent() && filtering.test(assemblyRecipe.get()
-			.getResultItem(level.registryAccess())))
-			return ImmutableList.of(assemblyRecipe.get());
+			.getResultItem(level.registryAccess()))) {
+			List<? extends Recipe<?>> returnList = ImmutableList.of(assemblyRecipe.get());
+			previousRecipeList = returnList;
+			return returnList;
+		}
 
 		Predicate<Recipe<?>> types = RecipeConditions.isOfType(AllRecipeTypes.CUTTING.getType(),
 			AllConfigs.server().recipes.allowStonecuttingOnSaw.get() ? RecipeType.STONECUTTING : null,
 			AllConfigs.server().recipes.allowWoodcuttingOnSaw.get() ? woodcuttingRecipeType.get() : null);
 
 		List<Recipe<?>> startedSearch = RecipeFinder.get(cuttingRecipesKey, level, types);
-		return startedSearch.stream()
-			.filter(RecipeConditions.outputMatchesFilter(filtering))
-			.filter(RecipeConditions.firstIngredientMatches(inventory.getStackInSlot(0)))
-			.filter(r -> !AllRecipeTypes.shouldIgnoreInAutomation(r))
-			.collect(Collectors.toList());
+		List<? extends Recipe<?>> returnList = startedSearch.stream()
+				.filter(RecipeConditions.outputMatchesFilter(filtering))
+				.filter(RecipeConditions.firstIngredientMatches(inventory.getStackInSlot(0)))
+				.filter(r -> !AllRecipeTypes.shouldIgnoreInAutomation(r))
+				.collect(Collectors.toList());
+		previousRecipeList = returnList;
+		return returnList;
 	}
 
 	public void insertItem(ItemEntity entity) {
