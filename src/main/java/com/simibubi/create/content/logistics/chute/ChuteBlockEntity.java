@@ -349,6 +349,8 @@ public class ChuteBlockEntity extends SmartBlockEntity implements IHaveGoggleInf
 			return;
 		if (invVersionTracker.stillWaiting(inv))
 			return;
+		if(!this.canOutputItems())
+			return;
 		Predicate<ItemStack> canAccept = this::canAcceptItem;
 		int count = getExtractionAmount();
 		ExtractionCountMode mode = getExtractionMode();

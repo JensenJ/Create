@@ -1,3 +1,4 @@
 Changes made in this custom compiled version:
 Fixed filters not working with NBT
 Removed schematicannon max range check
+Smart chutes no longer scan inventories if they are powered
