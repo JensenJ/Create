@@ -12,6 +12,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 
+import com.simibubi.create.foundation.blockEntity.behaviour.inventory.VersionedInventoryTrackerBehaviour;
+
 import org.jetbrains.annotations.Nullable;
 
 import com.jozufozu.flywheel.light.LightListener;
@@ -74,6 +76,7 @@ public class BeltBlockEntity extends KineticBlockEntity implements SidedStorageB
 	protected BlockPos controller;
 	protected BeltInventory inventory;
 	protected Storage<ItemVariant> itemHandler;
+	public VersionedInventoryTrackerBehaviour invVersionTracker;
 
 	public CompoundTag trackerUpdateTag;
 
@@ -99,6 +102,7 @@ public class BeltBlockEntity extends KineticBlockEntity implements SidedStorageB
 			.setInsertionHandler(this::tryInsertingFromSide).considerOccupiedWhen(this::isOccupied));
 		behaviours.add(new TransportedItemStackHandlerBehaviour(this, this::applyToAllItems)
 			.withStackPlacement(this::getWorldPositionOf));
+		behaviours.add(invVersionTracker = new VersionedInventoryTrackerBehaviour(this));
 	}
 
 	@Override
@@ -463,7 +467,7 @@ public class BeltBlockEntity extends KineticBlockEntity implements SidedStorageB
 			return false;
 		return getMovementFacing() != side.getOpposite();
 	}
-	
+
 	private boolean isOccupied(Direction side) {
 		BeltBlockEntity nextBeltController = getControllerBE();
 		if (nextBeltController == null)

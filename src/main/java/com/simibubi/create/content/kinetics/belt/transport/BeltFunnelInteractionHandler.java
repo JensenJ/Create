@@ -74,6 +74,9 @@ public class BeltFunnelInteractionHandler {
 				else
 					continue;
 
+			if(beltInventory.belt.invVersionTracker.stillWaiting(inserting))
+				continue;
+
 			int amountToExtract = funnelBE.getAmountToExtract();
 			ExtractionCountMode modeToExtract = funnelBE.getModeToExtract();
 
@@ -93,14 +96,18 @@ public class BeltFunnelInteractionHandler {
 						return true;
 					else
 						continue;
+				else
+					beltInventory.belt.invVersionTracker.awaitNewVersion(inserting);
 			}
 
 			ItemStack remainder = inserting.insert(toInsert);
-			if (ItemStack.matches(remainder, toInsert))
+			if (ItemStack.matches(remainder, toInsert)) {
+				beltInventory.belt.invVersionTracker.awaitNewVersion(inserting);
 				if (blocking)
 					return true;
 				else
 					continue;
+			}
 
 			int notFilled = currentItem.stack.getCount() - toInsert.getCount();
 			if (!remainder.isEmpty()) {
