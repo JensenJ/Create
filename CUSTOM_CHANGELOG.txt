@@ -1,0 +1,2 @@
+Changes made in this custom compiled version:
+Fixed filters not working with NBT
